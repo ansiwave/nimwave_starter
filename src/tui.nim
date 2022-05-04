@@ -18,7 +18,7 @@ proc init() =
   common.init()
 
 proc tick() =
-  let tb = common.tick(terminal.terminalWidth(), terminal.terminalHeight())
+  let tb = common.tick(terminal.terminalWidth(), terminal.terminalHeight(), iw.getKey())
   iw.display(tb)
 
 when isMainModule:

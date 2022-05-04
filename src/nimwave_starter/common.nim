@@ -5,9 +5,8 @@ proc init*() =
 
 var lastKey = iw.Key.None
 
-proc tick*(width: int, height: int): iw.TerminalBuffer =
+proc tick*(width: int, height: int, key: iw.Key): iw.TerminalBuffer =
   result = iw.newTerminalBuffer(width, height)
-  let key = iw.getKey()
   if key != iw.Key.None:
     lastKey = key
   iw.write(result, "last key pressed: ", $lastKey)
