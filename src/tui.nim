@@ -1,6 +1,7 @@
 from illwave as iw import nil
 from terminal import nil
 from os import nil
+from nimwave_starter/common import nil
 
 proc deinit() =
   iw.deinit()
@@ -14,15 +15,10 @@ proc init() =
       quit(0)
   )
   terminal.hideCursor()
-
-var lastKey = iw.Key.None
+  common.init()
 
 proc tick() =
-  var tb = iw.newTerminalBuffer(terminal.terminalWidth(), terminal.terminalHeight())
-  let key = iw.getKey()
-  if key != iw.Key.None:
-    lastKey = key
-  iw.write(tb, "last key pressed: ", $lastKey)
+  let tb = common.tick(terminal.terminalWidth(), terminal.terminalHeight())
   iw.display(tb)
 
 when isMainModule:

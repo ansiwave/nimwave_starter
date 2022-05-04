@@ -4,7 +4,7 @@ version       = "0.1.0"
 author        = "FIXME"
 description   = "FIXME"
 srcDir        = "src"
-bin           = @["nimwave_starter"]
+bin           = @["tui"]
 
 
 # Dependencies
