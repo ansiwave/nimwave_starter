@@ -21,8 +21,11 @@ proc tick() =
   let tb = common.tick(terminal.terminalWidth(), terminal.terminalHeight(), iw.getKey())
   iw.display(tb)
 
-when isMainModule:
+proc main() =
   init()
   while true:
     tick()
     os.sleep(5)
+
+when isMainModule:
+  main()

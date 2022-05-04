@@ -98,12 +98,9 @@ proc main*() =
     let ts = glfwGetTime()
     guicore.game.deltaTime = ts - guicore.game.totalTime
     guicore.game.totalTime = ts
-    let canSleep = guicore.tick(guicore.game)
+    guicore.tick(guicore.game)
     window.swapBuffers()
-    if canSleep:
-      glfwWaitEvents()
-    else:
-      glfwPollEvents()
+    glfwPollEvents()
 
   window.destroyWindow()
   glfwTerminate()

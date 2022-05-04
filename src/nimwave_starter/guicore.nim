@@ -71,12 +71,11 @@ proc init*(game: var Game) =
   baseEntity = ptext.initTextEntity(text.monoFont)
   textEntity = compile(game, text.initInstancedEntity(baseEntity, text.monoFont))
 
-proc tick*(game: Game): bool =
+proc tick*(game: Game) =
   glClearColor(constants.bgColor.arr[0], constants.bgColor.arr[1], constants.bgColor.arr[2], constants.bgColor.arr[3])
   glClear(GL_COLOR_BUFFER_BIT)
   glViewport(0, 0, GLsizei(game.windowWidth), GLsizei(game.windowHeight))
 
-  var finishedLoading = false
   let
     fontWidth = fontWidth()
     fontHeight = fontHeight()
@@ -116,6 +115,4 @@ proc tick*(game: Game): bool =
   e.translate(0f, 0f)
   e.scale(fontMultiplier, fontMultiplier)
   render(game, e)
-
-  return finishedLoading
 
