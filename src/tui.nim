@@ -1,7 +1,7 @@
 from illwave as iw import nil
 from terminal import nil
 from os import nil
-from nimwave_starter/common import nil
+from common import nil
 
 proc deinit() =
   iw.deinit()

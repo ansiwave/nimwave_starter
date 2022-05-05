@@ -1,6 +1,6 @@
 import paranim/glfw
 import tables, bitops
-from nimwave_starter/guicore import nil
+from gui/core import nil
 from nimwave/gui/input import nil
 
 var
@@ -18,12 +18,12 @@ proc keyCallback(window: GLFWWindow, key: int32, scancode: int32, action: int32,
   if keys.hasKey(key):
     let iwKey = keys[key]
     if action in {GLFW_PRESS, GLFW_REPEAT}:
-      guicore.onKeyPress(iwKey)
+      core.onKeyPress(iwKey)
     elif action == GLFW_RELEASE:
-      guicore.onKeyRelease(iwKey)
+      core.onKeyRelease(iwKey)
 
 proc charCallback(window: GLFWWindow, codepoint: uint32) {.cdecl.} =
-  guicore.onChar(codepoint)
+  core.onChar(codepoint)
 
 proc updateCoords(xpos: var float64, ypos: var float64) =
   let mult = pixelDensity
@@ -35,7 +35,7 @@ proc cursorPosCallback(window: GLFWWindow, xpos: float64, ypos: float64) {.cdecl
     mouseX = xpos
     mouseY = ypos
   updateCoords(mouseX, mouseY)
-  guicore.onMouseMove(mouseX, mouseY)
+  core.onMouseMove(mouseX, mouseY)
 
 proc mouseButtonCallback(window: GLFWWindow, button: int32, action: int32, mods: int32) {.cdecl.} =
   if input.glfwToIllwaveMouseButton.hasKey(button) and input.glfwToIllwaveMouseAction.hasKey(action):
@@ -44,13 +44,13 @@ proc mouseButtonCallback(window: GLFWWindow, button: int32, action: int32, mods:
       ypos: float64
     getCursorPos(window, xpos.addr, ypos.addr)
     updateCoords(xpos, ypos)
-    guicore.onMouseUpdate(xpos, ypos)
-    guicore.onMouseClick(input.glfwToIllwaveMouseButton[button], input.glfwToIllwaveMouseAction[action])
+    core.onMouseUpdate(xpos, ypos)
+    core.onMouseClick(input.glfwToIllwaveMouseButton[button], input.glfwToIllwaveMouseAction[action])
 
 proc frameSizeCallback(window: GLFWWindow, width: int32, height: int32) {.cdecl.} =
-  guicore.game.windowWidth = width
-  guicore.game.windowHeight = height
-  guicore.onWindowResize(guicore.game.windowWidth, guicore.game.windowHeight)
+  core.game.windowWidth = width
+  core.game.windowHeight = height
+  core.onWindowResize(core.game.windowWidth, core.game.windowHeight)
 
 proc scrollCallback(window: GLFWWindow, xoffset: float64, yoffset: float64) {.cdecl.} =
   discard
@@ -87,18 +87,18 @@ proc main*() =
 
   window.frameSizeCallback(width, height)
 
-  guicore.init(guicore.game)
+  core.init(core.game)
 
   pixelDensity = max(1f, width / windowWidth)
-  guicore.fontMultiplier *= pixelDensity
+  core.fontMultiplier *= pixelDensity
 
-  guicore.game.totalTime = glfwGetTime()
+  core.game.totalTime = glfwGetTime()
 
   while not window.windowShouldClose:
     let ts = glfwGetTime()
-    guicore.game.deltaTime = ts - guicore.game.totalTime
-    guicore.game.totalTime = ts
-    guicore.tick(guicore.game)
+    core.game.deltaTime = ts - core.game.totalTime
+    core.game.totalTime = ts
+    core.tick(core.game)
     window.swapBuffers()
     glfwPollEvents()
 

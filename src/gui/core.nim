@@ -6,7 +6,7 @@ from nimwave/gui/text import nil
 from nimwave/gui/constants import nil
 import deques
 import tables
-from ./common import nil
+from ../common import nil
 from illwave as iw import `[]`, `[]=`
 
 type
