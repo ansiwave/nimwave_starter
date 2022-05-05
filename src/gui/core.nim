@@ -2,12 +2,13 @@ import paranim/opengl
 import paranim/gl, paranim/gl/entities
 from paranim/glm import vec4
 from paratext/gl/text as ptext import nil
+import paratext
 from nimwave/gui/text import nil
-from nimwave/gui/constants import nil
 import deques
 import tables
 from ../common import nil
 from illwave as iw import `[]`, `[]=`
+import unicode
 
 type
   Game* = object of RootGame
@@ -30,11 +31,22 @@ var
   viewHeight*: int32
   maxViewSize*: int32
 
+const
+  monoFontRaw = staticRead("assets/3270-Regular.ttf")
+  charCount = text.codepointToGlyph.len
+  blockCharIndex = text.codepointToGlyph["█".toRunes[0].int32]
+
+let
+  monoFont = initFont(ttf = monoFontRaw, fontHeight = 80,
+                       ranges = text.charRanges,
+                       bitmapWidth = 2048, bitmapHeight = 2048, charCount = charCount)
+  blockWidth = monoFont.chars[blockCharIndex].xadvance
+
 proc fontWidth*(): float =
-  text.blockWidth * fontMultiplier
+  blockWidth * fontMultiplier
 
 proc fontHeight*(): float =
-  text.monoFont.height * fontMultiplier
+  monoFont.height * fontMultiplier
 
 proc onKeyPress*(key: iw.Key) =
   keyQueue.addLast((key, iw.gMouseInfo))
@@ -68,11 +80,11 @@ proc init*(game: var Game) =
   glDisable(GL_CULL_FACE)
   glDisable(GL_DEPTH_TEST)
 
-  baseEntity = ptext.initTextEntity(text.monoFont)
-  textEntity = compile(game, text.initInstancedEntity(baseEntity, text.monoFont))
+  baseEntity = ptext.initTextEntity(monoFont)
+  textEntity = compile(game, text.initInstancedEntity(baseEntity, monoFont))
 
 proc tick*(game: Game) =
-  glClearColor(constants.bgColor.arr[0], constants.bgColor.arr[1], constants.bgColor.arr[2], constants.bgColor.arr[3])
+  glClearColor(text.bgColor.arr[0], text.bgColor.arr[1], text.bgColor.arr[2], text.bgColor.arr[3])
   glClear(GL_COLOR_BUFFER_BIT)
   glViewport(0, 0, GLsizei(game.windowWidth), GLsizei(game.windowHeight))
 
@@ -110,7 +122,7 @@ proc tick*(game: Game) =
     var line: seq[iw.TerminalChar]
     for x in 0 ..< termWidth:
       line.add(tb[x, y])
-    discard text.addLine(e, baseEntity, text.monoFont, constants.textColor, line)
+    discard text.addLine(e, baseEntity, monoFont, text.codepointToGlyph, text.textColor, line)
   e.project(vWidth, vHeight)
   e.translate(0f, 0f)
   e.scale(fontMultiplier, fontMultiplier)
