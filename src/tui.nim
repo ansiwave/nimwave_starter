@@ -2,6 +2,7 @@ from illwave as iw import nil
 from terminal import nil
 from os import nil
 from common import nil
+import unicode
 
 proc deinit() =
   iw.deinit()
@@ -21,6 +22,8 @@ proc tick() =
   let key = iw.getKey()
   if key == iw.Key.Mouse:
     common.onMouse(iw.gMouseInfo)
+  elif key in {iw.Key.Space .. iw.Key.Tilde}:
+    common.onRune(cast[Rune](key.ord))
   elif key != iw.Key.None:
     common.onKey(key)
   let tb = common.tick(terminal.terminalWidth(), terminal.terminalHeight())
