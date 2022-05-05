@@ -30,7 +30,7 @@ var
   charQueue: Deque[uint32]
 
 const
-  monoFontRaw = staticRead("assets/3270-Regular.ttf")
+  monoFontRaw = staticRead("../../web/3270-Regular.ttf")
   charCount = text.codepointToGlyph.len
   blockCharIndex = text.codepointToGlyph["█".toRunes[0].int32]
   bgColor = glm.vec4(0f/255f, 16f/255f, 64f/255f, 0.95f)

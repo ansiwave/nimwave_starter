@@ -1,0 +1,28 @@
+```
+# develop for the terminal
+nimble run tui
+
+# build release version for the terminal
+nimble build tui -d:release
+
+
+# develop for OpenGL
+nimble run gui
+
+# build release version for OpenGL
+nimble build gui -d:release --app:gui
+
+
+# build release version for the web
+nimble build web -d:release -d:emscripten
+```
+
+NOTE: To build for the web, you must install Emscripten:
+
+```
+git clone https://github.com/emscripten-core/emsdk
+cd emsdk
+./emsdk install latest
+./emsdk activate latest
+# add the dirs that are printed by the last command to your PATH
+```

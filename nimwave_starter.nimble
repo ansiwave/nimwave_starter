@@ -3,8 +3,9 @@
 version       = "0.1.0"
 author        = "FIXME"
 description   = "FIXME"
+license       = "FIXME"
 srcDir        = "src"
-bin           = @["tui", "gui"]
+bin           = @["tui", "gui", "web"]
 
 
 # Dependencies
