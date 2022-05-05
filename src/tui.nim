@@ -18,7 +18,12 @@ proc init() =
   common.init()
 
 proc tick() =
-  let tb = common.tick(terminal.terminalWidth(), terminal.terminalHeight(), iw.getKey().ord)
+  let key = iw.getKey()
+  if key == iw.Key.Mouse:
+    common.onMouse(iw.gMouseInfo)
+  elif key != iw.Key.None:
+    common.onKey(key)
+  let tb = common.tick(terminal.terminalWidth(), terminal.terminalHeight())
   iw.display(tb)
 
 proc main() =

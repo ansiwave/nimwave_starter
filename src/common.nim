@@ -1,17 +1,21 @@
 from illwave as iw import nil
 import unicode
 
+var lastKey = ""
+
+proc onMouse*(m: iw.MouseInfo) =
+  discard
+
+proc onRune*(r: Rune) =
+  lastKey = $r
+
+proc onKey*(k: iw.Key) =
+  lastKey = $k
+
 proc init*() =
   discard
 
-var lastKey = -1
-
-proc tick*(width: int, height: int, key: int): iw.TerminalBuffer =
+proc tick*(width: int, height: int): iw.TerminalBuffer =
   result = iw.newTerminalBuffer(width, height)
-  if key != iw.Key.None.ord:
-    lastKey = key
-  if lastKey < 0:
-    iw.write(result, "last key pressed: ", $lastKey)
-  else:
-    iw.write(result, "last key pressed: ", $cast[Rune](lastKey))
+  iw.write(result, "last key pressed: ", lastKey)
 

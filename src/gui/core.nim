@@ -4,7 +4,6 @@ from paranim/glm import vec4
 from paratext/gl/text as ptext import nil
 import paratext
 from nimwave/gui/text import nil
-import deques
 import tables
 from ../common import nil
 from illwave as iw import `[]`, `[]=`
@@ -26,8 +25,6 @@ var
   baseEntity: ptext.UncompiledTextEntity
   textEntity: text.AnsiwaveTextEntity
   fontMultiplier* = 1/4
-  charQueue: Deque[int]
-  mouseQueue: Deque[iw.MouseInfo]
 
 const
   monoFontRaw = staticRead("../../web/3270-Regular.ttf")
@@ -49,19 +46,19 @@ proc fontHeight*(): float =
   monoFont.height * fontMultiplier
 
 proc onKeyPress*(key: iw.Key) =
-  charQueue.addLast(key.ord)
+  common.onKey(key)
 
 proc onKeyRelease*(key: iw.Key) =
   discard
 
 proc onChar*(codepoint: uint32) =
-  charQueue.addLast(codepoint.int)
+  common.onRune(cast[Rune](codepoint))
 
 proc onMouseClick*(button: iw.MouseButton, action: iw.MouseButtonAction) =
   var info: iw.MouseInfo
   info.button = button
   info.action = action
-  mouseQueue.addLast(info)
+  common.onMouse(info)
 
 proc onMouseUpdate*(xpos: float, ypos: float) =
   iw.gMouseInfo.x = int(xpos / fontWidth() - 0.25)
@@ -97,17 +94,7 @@ proc tick*(game: Game) =
     termWidth = int(game.windowWidth.float / fontWidth)
     termHeight = int(game.windowHeight.float / fontHeight)
 
-  var tb: iw.TerminalBuffer
-
-  if charQueue.len == 0 and mouseQueue.len == 0:
-    tb = common.tick(termWidth, termHeight, iw.Key.None.ord)
-  else:
-    while charQueue.len > 0:
-      let ch = charQueue.popFirst
-      tb = common.tick(termWidth, termHeight, ch)
-    while mouseQueue.len > 0:
-      iw.gMouseInfo = mouseQueue.popFirst
-      tb = common.tick(termWidth, termHeight, iw.Key.Mouse.ord)
+  var tb = common.tick(termWidth, termHeight)
 
   termWidth = iw.width(tb)
   termHeight = iw.height(tb)
