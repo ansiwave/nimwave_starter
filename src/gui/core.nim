@@ -26,8 +26,8 @@ var
   baseEntity: ptext.UncompiledTextEntity
   textEntity: text.AnsiwaveTextEntity
   fontMultiplier* = 1/4
-  keyQueue: Deque[(iw.Key, iw.MouseInfo)]
-  charQueue: Deque[uint32]
+  charQueue: Deque[int]
+  mouseQueue: Deque[iw.MouseInfo]
 
 const
   monoFontRaw = staticRead("../../web/3270-Regular.ttf")
@@ -49,18 +49,19 @@ proc fontHeight*(): float =
   monoFont.height * fontMultiplier
 
 proc onKeyPress*(key: iw.Key) =
-  keyQueue.addLast((key, iw.gMouseInfo))
+  charQueue.addLast(key.ord)
 
 proc onKeyRelease*(key: iw.Key) =
   discard
 
 proc onChar*(codepoint: uint32) =
-  charQueue.addLast(codepoint)
+  charQueue.addLast(codepoint.int)
 
 proc onMouseClick*(button: iw.MouseButton, action: iw.MouseButtonAction) =
-  iw.gMouseInfo.button = button
-  iw.gMouseInfo.action = action
-  keyQueue.addLast((iw.Key.Mouse, iw.gMouseInfo))
+  var info: iw.MouseInfo
+  info.button = button
+  info.action = action
+  mouseQueue.addLast(info)
 
 proc onMouseUpdate*(xpos: float, ypos: float) =
   iw.gMouseInfo.x = int(xpos / fontWidth() - 0.25)
@@ -98,16 +99,15 @@ proc tick*(game: Game) =
 
   var tb: iw.TerminalBuffer
 
-  var rendered = false
-  while keyQueue.len > 0 or charQueue.len > 0:
-    let
-      (key, mouseInfo) = if keyQueue.len > 0: keyQueue.popFirst else: (iw.Key.None, iw.gMouseInfo)
-      ch = if charQueue.len > 0 and key == iw.Key.None: charQueue.popFirst else: 0
-    iw.gMouseInfo = mouseInfo
-    tb = common.tick(termWidth, termHeight, key)
-    rendered = true
-  if not rendered:
-    tb = common.tick(termWidth, termHeight, iw.Key.None)
+  if charQueue.len == 0 and mouseQueue.len == 0:
+    tb = common.tick(termWidth, termHeight, iw.Key.None.ord)
+  else:
+    while charQueue.len > 0:
+      let ch = charQueue.popFirst
+      tb = common.tick(termWidth, termHeight, ch)
+    while mouseQueue.len > 0:
+      iw.gMouseInfo = mouseQueue.popFirst
+      tb = common.tick(termWidth, termHeight, iw.Key.Mouse.ord)
 
   termWidth = iw.width(tb)
   termHeight = iw.height(tb)

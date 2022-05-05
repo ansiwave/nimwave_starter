@@ -3,33 +3,35 @@ import deques
 from ../common import nil
 
 var
-  keyQueue: Deque[(iw.Key, iw.MouseInfo)]
-  charQueue: Deque[uint32]
+  charQueue: Deque[int]
+  mouseQueue: Deque[iw.MouseInfo]
 
 proc onKeyPress*(key: iw.Key) =
-  keyQueue.addLast((key, iw.gMouseInfo))
+  charQueue.addLast(key.ord)
 
 proc onKeyRelease*(key: iw.Key) =
   discard
 
 proc onChar*(codepoint: uint32) =
-  charQueue.addLast(codepoint)
+  charQueue.addLast(codepoint.int)
 
 proc onMouseDown*(x: int, y: int) {.exportc.} =
-  iw.gMouseInfo.button = iw.MouseButton.mbLeft
-  iw.gMouseInfo.action = iw.MouseButtonAction.mbaPressed
-  iw.gMouseInfo.x = x
-  iw.gMouseInfo.y = y
-  keyQueue.addLast((iw.Key.Mouse, iw.gMouseInfo))
+  var info: iw.MouseInfo
+  info.button = iw.MouseButton.mbLeft
+  info.action = iw.MouseButtonAction.mbaPressed
+  info.x = x
+  info.y = y
+  mouseQueue.addLast(info)
 
 proc onMouseMove*(x: int, y: int) {.exportc.} =
   iw.gMouseInfo.x = x
   iw.gMouseInfo.y = y
 
 proc onMouseUp*() {.exportc.} =
-  iw.gMouseInfo.button = iw.MouseButton.mbLeft
-  iw.gMouseInfo.action = iw.MouseButtonAction.mbaReleased
-  keyQueue.addLast((iw.Key.Mouse, iw.gMouseInfo))
+  var info: iw.MouseInfo
+  info.button = iw.MouseButton.mbLeft
+  info.action = iw.MouseButtonAction.mbaReleased
+  mouseQueue.addLast(info)
 
 proc init*() =
   common.init()
@@ -39,14 +41,13 @@ proc tick*() =
     tb: iw.TerminalBuffer
     termWidth = 80
     termHeight = 40
-    rendered = false
 
-  while keyQueue.len > 0 or charQueue.len > 0:
-    let
-      (key, mouseInfo) = if keyQueue.len > 0: keyQueue.popFirst else: (iw.Key.None, iw.gMouseInfo)
-      ch = if charQueue.len > 0 and key == iw.Key.None: charQueue.popFirst else: 0
-    iw.gMouseInfo = mouseInfo
-    tb = common.tick(termWidth, termHeight, key)
-    rendered = true
-  if not rendered:
-    tb = common.tick(termWidth, termHeight, iw.Key.None)
+  if charQueue.len == 0 and mouseQueue.len == 0:
+    tb = common.tick(termWidth, termHeight, iw.Key.None.ord)
+  else:
+    while charQueue.len > 0:
+      let ch = charQueue.popFirst
+      tb = common.tick(termWidth, termHeight, ch)
+    while mouseQueue.len > 0:
+      iw.gMouseInfo = mouseQueue.popFirst
+      tb = common.tick(termWidth, termHeight, iw.Key.Mouse.ord)
