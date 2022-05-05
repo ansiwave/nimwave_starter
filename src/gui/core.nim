@@ -28,8 +28,6 @@ var
   fontMultiplier* = 1/4
   keyQueue: Deque[(iw.Key, iw.MouseInfo)]
   charQueue: Deque[uint32]
-  viewHeight*: int32
-  maxViewSize*: int32
 
 const
   monoFontRaw = staticRead("assets/3270-Regular.ttf")
@@ -116,7 +114,6 @@ proc tick*(game: Game) =
 
   let vWidth = termWidth.float * fontWidth
   let vHeight = termHeight.float * fontHeight
-  viewHeight = int32(vHeight)
 
   var e = gl.copy(textEntity)
   text.updateUniforms(e, 0, 0, false)
