@@ -35,6 +35,8 @@ const
   monoFontRaw = staticRead("assets/3270-Regular.ttf")
   charCount = text.codepointToGlyph.len
   blockCharIndex = text.codepointToGlyph["█".toRunes[0].int32]
+  bgColor = glm.vec4(0f/255f, 16f/255f, 64f/255f, 0.95f)
+  textColor = glm.vec4(230f/255f, 235f/255f, 1f, 1f)
 
 let
   monoFont = initFont(ttf = monoFontRaw, fontHeight = 80,
@@ -84,7 +86,7 @@ proc init*(game: var Game) =
   textEntity = compile(game, text.initInstancedEntity(baseEntity, monoFont))
 
 proc tick*(game: Game) =
-  glClearColor(text.bgColor.arr[0], text.bgColor.arr[1], text.bgColor.arr[2], text.bgColor.arr[3])
+  glClearColor(bgColor.arr[0], bgColor.arr[1], bgColor.arr[2], bgColor.arr[3])
   glClear(GL_COLOR_BUFFER_BIT)
   glViewport(0, 0, GLsizei(game.windowWidth), GLsizei(game.windowHeight))
 
@@ -122,7 +124,7 @@ proc tick*(game: Game) =
     var line: seq[iw.TerminalChar]
     for x in 0 ..< termWidth:
       line.add(tb[x, y])
-    discard text.addLine(e, baseEntity, monoFont, text.codepointToGlyph, text.textColor, line)
+    discard text.addLine(e, baseEntity, monoFont, text.codepointToGlyph, textColor, line)
   e.project(vWidth, vHeight)
   e.translate(0f, 0f)
   e.scale(fontMultiplier, fontMultiplier)
