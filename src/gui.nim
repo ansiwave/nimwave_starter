@@ -1,7 +1,7 @@
 import paranim/glfw
 import tables, bitops
 from gui/core import nil
-from nimwave/gui/input import nil
+from nimwave/gui import nil
 
 var
   window: GLFWWindow
@@ -12,9 +12,9 @@ proc keyCallback(window: GLFWWindow, key: int32, scancode: int32, action: int32,
     return
   let keys =
     if 0 != bitand(mods, GLFW_MOD_CONTROL):
-      input.glfwToIllwaveCtrlKey
+      gui.glfwToIllwaveCtrlKey
     else:
-      input.glfwToIllwaveKey
+      gui.glfwToIllwaveKey
   if keys.hasKey(key):
     let iwKey = keys[key]
     if action in {GLFW_PRESS, GLFW_REPEAT}:
@@ -38,14 +38,14 @@ proc cursorPosCallback(window: GLFWWindow, xpos: float64, ypos: float64) {.cdecl
   core.onMouseMove(mouseX, mouseY)
 
 proc mouseButtonCallback(window: GLFWWindow, button: int32, action: int32, mods: int32) {.cdecl.} =
-  if input.glfwToIllwaveMouseButton.hasKey(button) and input.glfwToIllwaveMouseAction.hasKey(action):
+  if gui.glfwToIllwaveMouseButton.hasKey(button) and gui.glfwToIllwaveMouseAction.hasKey(action):
     var
       xpos: float64
       ypos: float64
     getCursorPos(window, xpos.addr, ypos.addr)
     updateCoords(xpos, ypos)
     core.onMouseUpdate(xpos, ypos)
-    core.onMouseClick(input.glfwToIllwaveMouseButton[button], input.glfwToIllwaveMouseAction[action])
+    core.onMouseClick(gui.glfwToIllwaveMouseButton[button], gui.glfwToIllwaveMouseAction[action])
 
 proc frameSizeCallback(window: GLFWWindow, width: int32, height: int32) {.cdecl.} =
   core.game.windowWidth = width
