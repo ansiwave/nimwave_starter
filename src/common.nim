@@ -1,4 +1,5 @@
 from illwave as iw import nil
+from nimwave/tui import nil
 import unicode
 
 var lastKey = ""
@@ -17,5 +18,5 @@ proc init*() =
 
 proc tick*(width: int, height: int): iw.TerminalBuffer =
   result = iw.newTerminalBuffer(width, height)
-  iw.write(result, "last key pressed: ", lastKey)
+  tui.write(result, 0, 0, "\e[38;2;155;55;50mlast\e[0m key pressed: " & lastKey)
 

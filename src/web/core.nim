@@ -1,7 +1,7 @@
 from illwave as iw import `[]`, `[]=`, `==`
 from ../common import nil
 import unicode
-from nimwave/web/text import nil
+from nimwave/web import nil
 from nimwave/web/emscripten import nil
 
 proc onKeyPress*(key: iw.Key) =
@@ -43,6 +43,6 @@ proc tick*() =
     tb = common.tick(termWidth, termHeight)
 
   if lastTb == nil or lastTb[] != tb[]:
-    let html = text.toHtml(tb)
+    let html = web.toHtml(tb)
     emscripten.setInnerHtml("#content", html)
     lastTb = tb

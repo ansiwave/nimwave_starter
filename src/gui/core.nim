@@ -3,7 +3,7 @@ import paranim/gl, paranim/gl/entities
 from paranim/glm import vec4
 from paratext/gl/text as ptext import nil
 import paratext
-from nimwave/gui/text import nil
+from nimwave/gui import nil
 import tables
 from ../common import nil
 from illwave as iw import `[]`, `[]=`
@@ -23,19 +23,19 @@ type
 var
   game*: Game
   baseEntity: ptext.UncompiledTextEntity
-  textEntity: text.NimwaveTextEntity
+  textEntity: gui.NimwaveTextEntity
   fontMultiplier* = 1/4
 
 const
   monoFontRaw = staticRead("../../web/3270-Regular.ttf")
-  charCount = text.codepointToGlyph.len
-  blockCharIndex = text.codepointToGlyph["█".toRunes[0].int32]
+  charCount = gui.codepointToGlyph.len
+  blockCharIndex = gui.codepointToGlyph["█".toRunes[0].int32]
   bgColor = glm.vec4(0f/255f, 16f/255f, 64f/255f, 0.95f)
   textColor = glm.vec4(230f/255f, 235f/255f, 1f, 1f)
 
 let
   monoFont = initFont(ttf = monoFontRaw, fontHeight = 80,
-                       ranges = text.charRanges,
+                       ranges = gui.charRanges,
                        bitmapWidth = 2048, bitmapHeight = 2048, charCount = charCount)
   blockWidth = monoFont.chars[blockCharIndex].xadvance
 
@@ -79,7 +79,7 @@ proc init*(game: var Game) =
   glDisable(GL_DEPTH_TEST)
 
   baseEntity = ptext.initTextEntity(monoFont)
-  textEntity = compile(game, text.initInstancedEntity(baseEntity, monoFont))
+  textEntity = compile(game, gui.initInstancedEntity(baseEntity, monoFont))
 
 proc tick*(game: Game) =
   glClearColor(bgColor.arr[0], bgColor.arr[1], bgColor.arr[2], bgColor.arr[3])
@@ -103,12 +103,12 @@ proc tick*(game: Game) =
   let vHeight = termHeight.float * fontHeight
 
   var e = gl.copy(textEntity)
-  text.updateUniforms(e, 0, 0, false)
+  gui.updateUniforms(e, 0, 0, false)
   for y in 0 ..< termHeight:
     var line: seq[iw.TerminalChar]
     for x in 0 ..< termWidth:
       line.add(tb[x, y])
-    discard text.addLine(e, baseEntity, monoFont, text.codepointToGlyph, textColor, line)
+    discard gui.addLine(e, baseEntity, monoFont, gui.codepointToGlyph, textColor, line)
   e.project(vWidth, vHeight)
   e.translate(0f, 0f)
   e.scale(fontMultiplier, fontMultiplier)
