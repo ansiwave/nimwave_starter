@@ -23,7 +23,7 @@ when defined(emscripten):
   --define:useMalloc
   --opt:size
 
-  switch("passL", "-o web/index.html --shell-file src/web/shell_minimal.html -s EXPORTED_FUNCTIONS=\"['_main', '_onMouseDown', '_onMouseMove', '_onMouseUp']\" -s EXPORTED_RUNTIME_METHODS=\"['ccall']\"")
+  switch("passL", "-o web/index.html --shell-file src/web/index.html -s EXPORTED_FUNCTIONS=\"['_main', '_onMouseDown', '_onMouseMove', '_onMouseUp']\" -s EXPORTED_RUNTIME_METHODS=\"['ccall']\"")
 
 
 --gc:orc
