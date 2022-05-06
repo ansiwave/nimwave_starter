@@ -23,7 +23,7 @@ type
 var
   game*: Game
   baseEntity: ptext.UncompiledTextEntity
-  textEntity: text.AnsiwaveTextEntity
+  textEntity: text.NimwaveTextEntity
   fontMultiplier* = 1/4
 
 const
