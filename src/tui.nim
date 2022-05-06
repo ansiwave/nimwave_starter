@@ -9,6 +9,7 @@ proc deinit() =
   terminal.showCursor()
 
 proc init() =
+  terminal.enableTrueColors()
   iw.init(fullscreen=true, mouse=true)
   setControlCHook(
     proc () {.noconv.} =
