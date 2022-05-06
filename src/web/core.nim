@@ -1,6 +1,8 @@
-from illwave as iw import nil
+from illwave as iw import `[]`, `[]=`, `==`
 from ../common import nil
 import unicode
+from nimwave/web/text import nil
+from nimwave/web/emscripten import nil
 
 proc onKeyPress*(key: iw.Key) =
   common.onKey(key)
@@ -32,8 +34,15 @@ proc onMouseUp*() {.exportc.} =
 proc init*() =
   common.init()
 
+var lastTb: iw.TerminalBuffer
+
 proc tick*() =
   var
     termWidth = 80
     termHeight = 40
     tb = common.tick(termWidth, termHeight)
+
+  if lastTb == nil or lastTb[] != tb[]:
+    let html = text.toHtml(tb)
+    emscripten.setInnerHtml("#content", html)
+    lastTb = tb
