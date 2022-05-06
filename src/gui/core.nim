@@ -1,8 +1,8 @@
 import paranim/opengl
 import paranim/gl, paranim/gl/entities
 from paranim/glm import vec4
-from paratext/gl/text as ptext import nil
-import paratext
+from paratext/gl/text import nil
+from paratext import nil
 from nimwave/gui import nil
 import tables
 from ../common import nil
@@ -22,7 +22,7 @@ type
 
 var
   game*: Game
-  baseEntity: ptext.UncompiledTextEntity
+  baseEntity: text.UncompiledTextEntity
   textEntity: gui.NimwaveTextEntity
   fontMultiplier* = 1/4
 
@@ -34,9 +34,9 @@ const
   textColor = glm.vec4(230f/255f, 235f/255f, 1f, 1f)
 
 let
-  monoFont = initFont(ttf = monoFontRaw, fontHeight = 80,
-                       ranges = gui.charRanges,
-                       bitmapWidth = 2048, bitmapHeight = 2048, charCount = charCount)
+  monoFont = paratext.initFont(ttf = monoFontRaw, fontHeight = 80,
+                               ranges = gui.charRanges,
+                               bitmapWidth = 2048, bitmapHeight = 2048, charCount = charCount)
   blockWidth = monoFont.chars[blockCharIndex].xadvance
 
 proc fontWidth*(): float =
@@ -78,7 +78,7 @@ proc init*(game: var Game) =
   glDisable(GL_CULL_FACE)
   glDisable(GL_DEPTH_TEST)
 
-  baseEntity = ptext.initTextEntity(monoFont)
+  baseEntity = text.initTextEntity(monoFont)
   textEntity = compile(game, gui.initInstancedEntity(baseEntity, monoFont))
 
 proc tick*(game: Game) =
