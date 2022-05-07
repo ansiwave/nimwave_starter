@@ -79,7 +79,7 @@ proc tick*() =
     termHeight = 40
     tb = common.tick(termWidth, termHeight)
 
-  if lastTb == nil or lastTb[] != tb[]:
+  if lastTb != tb:
     let html = toHtml(tb)
     emscripten.setInnerHtml("#content", html)
     lastTb = tb
