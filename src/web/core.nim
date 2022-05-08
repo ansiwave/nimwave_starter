@@ -34,9 +34,9 @@ proc onMouseUp*() {.exportc.} =
   common.onMouse(info)
 
 const
+  padding = 0.81
   fontHeight = 20
-  fontWidth = 10.81
-  padding = "0.81"
+  fontWidth = (fontHeight / 2) + padding
 
 proc charToHtml(ch: iw.TerminalChar, position: tuple[x: int, y: int] = (-1, -1)): string =
   if cast[uint32](ch.ch) == 0:
