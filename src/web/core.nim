@@ -31,10 +31,12 @@ proc onMouseMove*(x: int, y: int) {.exportc.} =
   info.y = y
   common.onMouse(info)
 
-proc onMouseUp*() {.exportc.} =
+proc onMouseUp*(x: int, y: int) {.exportc.} =
   var info: iw.MouseInfo
   info.button = iw.MouseButton.mbLeft
   info.action = iw.MouseButtonAction.mbaReleased
+  info.x = x
+  info.y = y
   common.onMouse(info)
 
 const
@@ -57,7 +59,7 @@ proc charToHtml(ch: iw.TerminalChar, position: tuple[x: int, y: int] = (-1, -1))
         ""
     mouseEvents =
       if position != (-1, -1):
-        "onmousedown='mouseDown($1, $2)' onmousemove='mouseMove($1, $2)'".format(position.x, position.y)
+        "onmousedown='mouseDown($1, $2)' onmouseup='mouseUp($1, $2)' onmousemove='mouseMove($1, $2)'".format(position.x, position.y)
       else:
         ""
   return "<span style='$1 $2 $3' $4>".format(fg, bg, additionalStyles, mouseEvents) & $ch.ch & "</span>"
