@@ -1,22 +1,30 @@
 from illwave as iw import nil
-from nimwave/tui import nil
-import unicode
+from nimwave import nil
+import unicode, json, tables, deques
 
-var lastKey = ""
+var mouseQueue: Deque[iw.MouseInfo]
 
 proc onMouse*(m: iw.MouseInfo) =
-  discard
+  mouseQueue.addLast(m)
 
 proc onRune*(r: Rune) =
-  lastKey = $r
+  discard
 
 proc onKey*(k: iw.Key) =
-  lastKey = $k
+  discard
 
 proc init*() =
   discard
 
 proc tick*(width: int, height: int): iw.TerminalBuffer =
-  result = iw.newTerminalBuffer(width, height)
-  tui.write(result, 0, 0, "\e[38;2;155;55;50mlast\e[0m key pressed: " & lastKey)
+  result = iw.initTerminalBuffer(width, height)
+  let mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
+  nimwave.render(
+    result,
+    %* [
+      "hbox",
+      ["rect"],
+      ["rect"],
+    ]
+  )
 
