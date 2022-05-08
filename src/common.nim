@@ -23,7 +23,7 @@ proc tick*(width: int, height: int): iw.TerminalBuffer =
     result,
     %* [
       "hbox",
-      ["rect"],
+      ["rect", ["vbox", ["rect"], ["rect"]]],
       ["rect"],
     ]
   )
