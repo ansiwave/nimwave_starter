@@ -16,15 +16,22 @@ proc onKey*(k: iw.Key) =
 proc init*() =
   discard
 
+proc thing(state: var nimwave.State, opts: JsonNode, children: seq[JsonNode]) =
+  iw.write(state.tb, $opts)
+
+nimwave.components["thing"] = thing
+
 proc tick*(width: int, height: int): iw.TerminalBuffer =
   result = iw.initTerminalBuffer(width, height)
-  let mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
+  var mouse: iw.MouseInfo
+  if mouseQueue.len > 0:
+    mouse = mouseQueue.popFirst
   nimwave.render(
     result,
     %* [
       "hbox",
-      ["rect", ["vbox", ["rect"], ["rect"]]],
-      ["rect"],
+      ["rect", {"id": "hello"}, ["vbox", ["rect", {"id": "wassup"}], ["rect"]]],
+      ["rect", {"id": "goodbye"}, ["thing", {"id": "wassup", "mouse": mouse}]],
     ]
   )
 
