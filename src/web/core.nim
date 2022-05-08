@@ -66,7 +66,7 @@ proc toHtml(tb: iw.TerminalBuffer): string =
     var line = ""
     for x in 0 ..< termWidth:
       line &= charToHtml(tb[x, y], (x, y))
-    result &= line
+    result &= "<div>" & line & "</div>"
 
 proc init*() =
   common.init()
