@@ -23,18 +23,16 @@ proc onMouseDown*(x: int, y: int) {.exportc.} =
   info.y = y
   common.onMouse(info)
 
-proc onMouseMove*(x: int, y: int) {.exportc.} =
-  var info: iw.MouseInfo
-  info.button = iw.MouseButton.mbNone
-  info.action = iw.MouseButtonAction.mbaNone
-  info.x = x
-  info.y = y
-  common.onMouse(info)
-
 proc onMouseUp*(x: int, y: int) {.exportc.} =
   var info: iw.MouseInfo
   info.button = iw.MouseButton.mbLeft
   info.action = iw.MouseButtonAction.mbaReleased
+  info.x = x
+  info.y = y
+  common.onMouse(info)
+
+proc onMouseMove*(x: int, y: int) {.exportc.} =
+  var info: iw.MouseInfo
   info.x = x
   info.y = y
   common.onMouse(info)

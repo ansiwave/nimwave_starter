@@ -54,18 +54,19 @@ proc onKeyRelease*(key: iw.Key) =
 proc onChar*(codepoint: uint32) =
   common.onRune(cast[Rune](codepoint))
 
-proc onMouseClick*(button: iw.MouseButton, action: iw.MouseButtonAction) =
+proc onMouseClick*(button: iw.MouseButton, action: iw.MouseButtonAction, xpos: float, ypos: float) =
   var info: iw.MouseInfo
   info.button = button
   info.action = action
+  info.x = int(xpos / fontWidth() - 0.25)
+  info.y = int(ypos / fontHeight() - 0.25)
   common.onMouse(info)
 
-proc onMouseUpdate*(xpos: float, ypos: float) =
-  iw.gMouseInfo.x = int(xpos / fontWidth() - 0.25)
-  iw.gMouseInfo.y = int(ypos / fontHeight() - 0.25)
-
 proc onMouseMove*(xpos: float, ypos: float) =
-  onMouseUpdate(xpos, ypos)
+  var info: iw.MouseInfo
+  info.x = int(xpos / fontWidth() - 0.25)
+  info.y = int(ypos / fontHeight() - 0.25)
+  common.onMouse(info)
 
 proc onWindowResize*(windowWidth: int, windowHeight: int) =
   discard

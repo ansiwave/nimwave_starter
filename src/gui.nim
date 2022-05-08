@@ -44,8 +44,7 @@ proc mouseButtonCallback(window: GLFWWindow, button: int32, action: int32, mods:
       ypos: float64
     getCursorPos(window, xpos.addr, ypos.addr)
     updateCoords(xpos, ypos)
-    core.onMouseUpdate(xpos, ypos)
-    core.onMouseClick(gui.glfwToIllwaveMouseButton[button], gui.glfwToIllwaveMouseAction[action])
+    core.onMouseClick(gui.glfwToIllwaveMouseButton[button], gui.glfwToIllwaveMouseAction[action], xpos, ypos)
 
 proc frameSizeCallback(window: GLFWWindow, width: int32, height: int32) {.cdecl.} =
   core.game.windowWidth = width
