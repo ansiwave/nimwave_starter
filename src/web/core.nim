@@ -35,6 +35,7 @@ proc onMouseUp*() {.exportc.} =
 
 const
   fontHeight = 20
+  fontWidth = 10.81
   padding = "0.81"
 
 proc charToHtml(ch: iw.TerminalChar, position: tuple[x: int, y: int] = (-1, -1)): string =
@@ -75,8 +76,8 @@ var lastTb: iw.TerminalBuffer
 
 proc tick*() =
   var
-    termWidth = 80
-    termHeight = 40
+    termWidth = int(emscripten.getClientWidth().float / fontWidth)
+    termHeight = int(emscripten.getClientHeight() / fontHeight)
     tb = common.tick(termWidth, termHeight)
 
   if lastTb != tb:
