@@ -24,8 +24,12 @@ proc onMouseDown*(x: int, y: int) {.exportc.} =
   common.onMouse(info)
 
 proc onMouseMove*(x: int, y: int) {.exportc.} =
-  iw.gMouseInfo.x = x
-  iw.gMouseInfo.y = y
+  var info: iw.MouseInfo
+  info.button = iw.MouseButton.mbNone
+  info.action = iw.MouseButtonAction.mbaNone
+  info.x = x
+  info.y = y
+  common.onMouse(info)
 
 proc onMouseUp*() {.exportc.} =
   var info: iw.MouseInfo
