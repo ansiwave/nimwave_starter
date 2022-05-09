@@ -40,7 +40,9 @@ proc tick*(width: int, height: int): iw.TerminalBuffer =
     ctx,
     %* [
       "hbox",
-      ["vbox", {"id": "hello", "border": "single"}, ["vbox", ["vbox", {"border": "single"}], ["vbox", {"border": "single"}]]],
+      ["vbox", {"id": "hello", "border": "single"},
+       ["vbox", ["vbox", {"border": "single"}],
+       ["vbox", {"border": "single"}]]],
       ["vbox", {"id": "goodbye", "border": "single"},
        ["counter", {"id": "counter"}]],
     ]
