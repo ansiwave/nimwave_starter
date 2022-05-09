@@ -1,48 +1,53 @@
 from illwave as iw import nil
 from nimwave import nil
-import unicode, json, tables, deques
+import unicode, json, tables
 
-var mouseQueue: Deque[iw.MouseInfo]
+var
+  mouse: iw.MouseInfo
+  rune: Rune
+  key: iw.Key
 
 proc onMouse*(m: iw.MouseInfo) =
-  mouseQueue.addLast(m)
+  mouse = m
 
 proc onRune*(r: Rune) =
-  discard
+  rune = r
 
 proc onKey*(k: iw.Key) =
-  discard
+  key = k
 
 proc init*() =
   discard
 
-proc counter(state: var nimwave.State, opts: JsonNode, children: seq[JsonNode]) =
+var counts: Table[string, int]
+
+proc counter(state: var nimwave.State, id: string, opts: JsonNode, children: seq[JsonNode]) =
+  if id notin counts:
+    counts[id] = 0
+  let
+    actions = {
+      "counter":
+      proc (state: var nimwave.State, opts: JsonNode) =
+        if mouse.action == iw.MouseButtonAction.mbaPressed and nimwave.contains(state.tb, mouse):
+          counts[id] += 1
+    }.toTable
   state = nimwave.slice(state, 0, 0, iw.width(state.tb), 5)
-  iw.write(state.tb, $opts)
+  nimwave.render(state, actions, %* ["hbox", $counts[id], ["hbox", {"border": "single", "action": "counter"}, "Count"]])
 
 nimwave.components["counter"] = counter
 
-proc thing(state: var nimwave.State, opts: JsonNode, children: seq[JsonNode]) =
-  let height = opts["height"].num
-  state = nimwave.slice(state, 0, 0, iw.width(state.tb), height)
-  iw.write(state.tb, $height)
-
-nimwave.components["thing"] = thing
-
 proc tick*(width: int, height: int): iw.TerminalBuffer =
   result = iw.initTerminalBuffer(width, height)
-  var mouse: iw.MouseInfo
-  if mouseQueue.len > 0:
-    mouse = mouseQueue.popFirst
   nimwave.render(
     result,
     %* [
       "hbox",
       ["vbox", {"id": "hello", "border": "single"}, ["vbox", ["vbox", {"border": "single"}], ["vbox", {"border": "single"}]]],
       ["vbox", {"id": "goodbye", "border": "single"},
-       ["counter", {"id": "counter", "mouse": mouse}],
-       ["thing", {"height": 20}],
-       ["thing", {"height": 10}]],
+       ["counter", {"id": "counter"}]],
     ]
   )
+  mouse = iw.MouseInfo()
+  rune = Rune(0)
+  key = iw.Key.None
 
