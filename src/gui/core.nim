@@ -15,10 +15,6 @@ type
     totalTime*: float
     windowWidth*: int32
     windowHeight*: int32
-    worldWidth*: int32
-    worldHeight*: int32
-    mouseX*: float
-    mouseY*: float
 
 var
   game*: Game
