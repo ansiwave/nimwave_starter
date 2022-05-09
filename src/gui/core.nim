@@ -62,6 +62,7 @@ proc onMouseMove*(xpos: float, ypos: float) =
   var info: iw.MouseInfo
   info.x = int(xpos / fontWidth() - 0.25)
   info.y = int(ypos / fontHeight() - 0.25)
+  info.move = true
   common.onMouse(info)
 
 proc onWindowResize*(windowWidth: int, windowHeight: int) =

@@ -35,6 +35,7 @@ proc onMouseMove*(x: int, y: int) {.exportc.} =
   var info: iw.MouseInfo
   info.x = x
   info.y = y
+  info.move = true
   common.onMouse(info)
 
 const
