@@ -24,22 +24,20 @@ var counts: Table[string, int]
 proc counter(state: var nimwave.State, id: string, opts: JsonNode, children: seq[JsonNode]) =
   if id notin counts:
     counts[id] = 0
-  let
-    actions = {
-      "counter":
-      proc (state: var nimwave.State, childId: string, opts: JsonNode, children: seq[JsonNode]) =
-        if mouse.action == iw.MouseButtonAction.mbaPressed and nimwave.contains(state.tb, mouse):
-          counts[id] += 1
-    }.toTable
+  proc countBtn(state: var nimwave.State, childId: string, opts: JsonNode, children: seq[JsonNode]) =
+    if mouse.action == iw.MouseButtonAction.mbaPressed and nimwave.contains(state.tb, mouse):
+      counts[id] += 1
+    nimwave.render(state, %* ["hbox", {"border": "single"}, "Count"])
+  nimwave.addComponent(state, "count-btn", countBtn)
   state = nimwave.slice(state, 0, 0, iw.width(state.tb), 5)
-  nimwave.render(state, actions, %* ["hbox", $counts[id], ["hbox", {"border": "single", "action": "counter"}, "Count"]])
-
-nimwave.components["counter"] = counter
+  nimwave.render(state, %* ["hbox", $counts[id], ["count-btn"]])
 
 proc tick*(width: int, height: int): iw.TerminalBuffer =
   result = iw.initTerminalBuffer(width, height)
+  var state = nimwave.initState(result)
+  nimwave.addComponent(state, "counter", counter)
   nimwave.render(
-    result,
+    state,
     %* [
       "hbox",
       ["vbox", {"id": "hello", "border": "single"}, ["vbox", ["vbox", {"border": "single"}], ["vbox", {"border": "single"}]]],
