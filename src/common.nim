@@ -22,6 +22,11 @@ proc counter(state: var nimwave.State, opts: JsonNode, children: seq[JsonNode]) 
 
 nimwave.components["counter"] = counter
 
+proc thing(state: var nimwave.State, opts: JsonNode, children: seq[JsonNode]) =
+  iw.write(state.tb, $iw.height(state.tb))
+
+nimwave.components["thing"] = thing
+
 proc tick*(width: int, height: int): iw.TerminalBuffer =
   result = iw.initTerminalBuffer(width, height)
   var mouse: iw.MouseInfo
@@ -31,10 +36,10 @@ proc tick*(width: int, height: int): iw.TerminalBuffer =
     result,
     %* [
       "hbox",
-      ["rect", {"id": "hello"}, ["vbox", ["rect"], ["rect"]]],
-      ["rect", {"id": "goodbye"},
+      ["vbox", {"id": "hello", "border": "single"}, ["vbox", ["vbox", {"border": "single"}], ["vbox", {"border": "single"}]]],
+      ["vbox", {"id": "goodbye", "border": "single"},
        ["counter", {"id": "counter", "mouse": mouse}],
-       "Hello, world!"],
+       ["thing"]],
     ]
   )
 
