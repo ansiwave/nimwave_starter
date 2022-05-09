@@ -17,13 +17,15 @@ proc init*() =
   discard
 
 proc counter(state: var nimwave.State, opts: JsonNode, children: seq[JsonNode]) =
+  state = nimwave.slice(state, 0, 0, iw.width(state.tb), 5)
   iw.write(state.tb, $opts)
-  state.preferredHeight = 10
 
 nimwave.components["counter"] = counter
 
 proc thing(state: var nimwave.State, opts: JsonNode, children: seq[JsonNode]) =
-  iw.write(state.tb, $iw.height(state.tb))
+  let height = opts["height"].num
+  state = nimwave.slice(state, 0, 0, iw.width(state.tb), height)
+  iw.write(state.tb, $height)
 
 nimwave.components["thing"] = thing
 
@@ -39,7 +41,8 @@ proc tick*(width: int, height: int): iw.TerminalBuffer =
       ["vbox", {"id": "hello", "border": "single"}, ["vbox", ["vbox", {"border": "single"}], ["vbox", {"border": "single"}]]],
       ["vbox", {"id": "goodbye", "border": "single"},
        ["counter", {"id": "counter", "mouse": mouse}],
-       ["thing"]],
+       ["thing", {"height": 20}],
+       ["thing", {"height": 10}]],
     ]
   )
 
