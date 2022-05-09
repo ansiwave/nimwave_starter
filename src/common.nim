@@ -16,10 +16,11 @@ proc onKey*(k: iw.Key) =
 proc init*() =
   discard
 
-proc thing(state: var nimwave.State, opts: JsonNode, children: seq[JsonNode]) =
+proc counter(state: var nimwave.State, opts: JsonNode, children: seq[JsonNode]) =
   iw.write(state.tb, $opts)
+  state.preferredHeight = 10
 
-nimwave.components["thing"] = thing
+nimwave.components["counter"] = counter
 
 proc tick*(width: int, height: int): iw.TerminalBuffer =
   result = iw.initTerminalBuffer(width, height)
@@ -30,8 +31,10 @@ proc tick*(width: int, height: int): iw.TerminalBuffer =
     result,
     %* [
       "hbox",
-      ["rect", {"id": "hello"}, ["vbox", ["rect", {"id": "wassup"}], ["rect"]]],
-      ["rect", {"id": "goodbye"}, ["thing", {"id": "wassup", "mouse": mouse}]],
+      ["rect", {"id": "hello"}, ["vbox", ["rect"], ["rect"]]],
+      ["rect", {"id": "goodbye"},
+       ["counter", {"id": "counter", "mouse": mouse}],
+       "Hello, world!"],
     ]
   )
 
