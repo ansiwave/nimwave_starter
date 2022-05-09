@@ -28,14 +28,14 @@ proc counter(state: var nimwave.State, id: string, opts: JsonNode, children: seq
     if mouse.action == iw.MouseButtonAction.mbaPressed and nimwave.contains(state.tb, mouse):
       counts[id] += 1
     nimwave.render(state, %* ["hbox", {"border": "single"}, "Count"])
-  nimwave.addComponent(state, "count-btn", countBtn)
+  state.components["count-btn"] = countBtn
   state = nimwave.slice(state, 0, 0, iw.width(state.tb), 5)
   nimwave.render(state, %* ["hbox", $counts[id], ["count-btn"]])
 
 proc tick*(width: int, height: int): iw.TerminalBuffer =
   result = iw.initTerminalBuffer(width, height)
   var state = nimwave.initState(result)
-  nimwave.addComponent(state, "counter", counter)
+  state.components["counter"] = counter
   nimwave.render(
     state,
     %* [
