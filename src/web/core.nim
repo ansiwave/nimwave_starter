@@ -72,7 +72,7 @@ proc toHtml(tb: iw.TerminalBuffer): string =
     var line = ""
     for x in 0 ..< termWidth:
       line &= charToHtml(tb[x, y], (x, y))
-    result &= "<div>" & line & "</div>"
+    result &= "<div style='user-select: none;'>" & line & "</div>"
 
 proc init*() =
   common.init()
