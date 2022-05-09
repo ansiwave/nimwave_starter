@@ -27,7 +27,7 @@ proc counter(state: var nimwave.State, id: string, opts: JsonNode, children: seq
   let
     actions = {
       "counter":
-      proc (state: var nimwave.State, opts: JsonNode) =
+      proc (state: var nimwave.State, childId: string, opts: JsonNode, children: seq[JsonNode]) =
         if mouse.action == iw.MouseButtonAction.mbaPressed and nimwave.contains(state.tb, mouse):
           counts[id] += 1
     }.toTable
