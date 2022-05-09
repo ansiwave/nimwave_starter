@@ -1,4 +1,4 @@
-from illwave as iw import nil
+from illwave as iw import `[]`, `[]=`, `==`
 from nimwave import nil
 import unicode, json, tables
 
