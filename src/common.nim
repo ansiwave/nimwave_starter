@@ -1,20 +1,23 @@
 from illwave as iw import `[]`, `[]=`, `==`
 from nimwave import nil
-import unicode, json, tables
+import unicode, json, tables, deques
 
 var
   mouse: iw.MouseInfo
+  mouseQueue: Deque[iw.MouseInfo]
   rune: Rune
+  runeQueue: Deque[Rune]
   key: iw.Key
+  keyQueue: Deque[iw.Key]
 
 proc onMouse*(m: iw.MouseInfo) =
-  mouse = m
+  mouseQueue.addLast(m)
 
 proc onRune*(r: Rune) =
-  rune = r
+  runeQueue.addLast(r)
 
 proc onKey*(k: iw.Key) =
-  key = k
+  keyQueue.addLast(k)
 
 proc init*() =
   discard
@@ -33,6 +36,10 @@ proc counter(ctx: var nimwave.Context, id: string, opts: JsonNode, children: seq
   nimwave.render(ctx, %* ["hbox", $counts[id], ["count-btn"]])
 
 proc tick*(width: int, height: int): iw.TerminalBuffer =
+  mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
+  rune = if runeQueue.len > 0: runeQueue.popFirst else: Rune(0)
+  key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
+
   result = iw.initTerminalBuffer(width, height)
   var ctx = nimwave.initContext(result)
   ctx.components["counter"] = counter
@@ -47,7 +54,4 @@ proc tick*(width: int, height: int): iw.TerminalBuffer =
        ["counter", {"id": "counter"}]],
     ]
   )
-  mouse = iw.MouseInfo()
-  rune = Rune(0)
-  key = iw.Key.None
 
