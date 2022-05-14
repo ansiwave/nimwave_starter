@@ -92,7 +92,9 @@ proc tick*(game: Game) =
     termWidth = int(game.windowWidth.float / fontWidth)
     termHeight = int(game.windowHeight.float / fontHeight)
 
-  var tb = common.tick(termWidth, termHeight)
+  var tb = iw.initTerminalBuffer(termWidth, termHeight)
+
+  common.tick(tb)
 
   termWidth = iw.width(tb)
   termHeight = iw.height(tb)

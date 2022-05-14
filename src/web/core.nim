@@ -83,7 +83,9 @@ proc tick*() =
   var
     termWidth = int(emscripten.getClientWidth().float / fontWidth)
     termHeight = int(emscripten.getClientHeight() / fontHeight)
-    tb = common.tick(termWidth, termHeight)
+    tb = iw.initTerminalBuffer(termWidth, termHeight)
+
+  common.tick(tb)
 
   if lastTb != tb:
     let html = toHtml(tb)

@@ -27,7 +27,8 @@ proc tick() =
     common.onRune(cast[Rune](key.ord))
   elif key != iw.Key.None:
     common.onKey(key)
-  let tb = common.tick(terminal.terminalWidth(), terminal.terminalHeight())
+  var tb = iw.initTerminalBuffer(terminal.terminalWidth(), terminal.terminalHeight())
+  common.tick(tb)
   iw.display(tb)
 
 proc main() =
