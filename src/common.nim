@@ -24,16 +24,16 @@ proc init*() =
 
 var counts: Table[string, int]
 
-proc counter(ctx: var nimwave.Context, id: string, opts: JsonNode, children: seq[JsonNode]) =
+proc counter(ctx: var nimwave.Context, id: string, node: JsonNode, children: seq[JsonNode]) =
   if id notin counts:
     counts[id] = 0
-  proc countBtn(ctx: var nimwave.Context, childId: string, opts: JsonNode, children: seq[JsonNode]) =
+  proc countBtn(ctx: var nimwave.Context, childId: string, node: JsonNode, children: seq[JsonNode]) =
     if mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse):
       counts[id] += 1
-    nimwave.render(ctx, %* ["hbox", {"border": "single"}, "Count"])
+    nimwave.render(ctx, %* [{"type": "hbox", "border": "single"}, "Count"])
   ctx.components["count-btn"] = countBtn
   ctx = nimwave.slice(ctx, 0, 0, 20, 3)
-  nimwave.render(ctx, %* ["hbox", ["vbox", "", $counts[id]], ["count-btn"]])
+  nimwave.render(ctx, %* [{"type": "hbox"}, [{"type": "vbox"}, "", $counts[id]], {"type": "count-btn"}])
 
 proc tick*(tb: var iw.TerminalBuffer) =
   mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
@@ -45,13 +45,13 @@ proc tick*(tb: var iw.TerminalBuffer) =
   nimwave.render(
     ctx,
     %* [
-      "hbox",
-      ["vbox", {"id": "hello", "border": "single"},
-       ["vbox",
-        ["vbox", {"border": "single"}],
-        ["vbox", {"border": "single"}]]],
-      ["vbox", {"id": "goodbye", "border": "single"},
-       ["counter", {"id": "counter"}]],
+      {"type": "hbox"},
+      [{"type": "vbox", "id": "hello", "border": "single"},
+       [{"type": "vbox"},
+        {"type": "vbox", "border": "single"},
+        {"type": "vbox", "border": "single"}]],
+      [{"type": "vbox", "id": "goodbye", "border": "single"},
+       {"type": "counter", "id": "counter"}],
     ]
   )
 
