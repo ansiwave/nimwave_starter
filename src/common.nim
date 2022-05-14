@@ -24,10 +24,10 @@ proc init*() =
 
 var counts: Table[string, int]
 
-proc counter(ctx: var nimwave.Context, id: string, node: JsonNode, children: seq[JsonNode]) =
+proc counter(ctx: var nimwave.Context[void], id: string, node: JsonNode, children: seq[JsonNode]) =
   if id notin counts:
     counts[id] = 0
-  proc countBtn(ctx: var nimwave.Context, childId: string, node: JsonNode, children: seq[JsonNode]) =
+  proc countBtn(ctx: var nimwave.Context[void], childId: string, node: JsonNode, children: seq[JsonNode]) =
     if mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse):
       counts[id] += 1
     nimwave.render(ctx, %* {"type": "hbox", "border": "single", "children": ["Count"]})
@@ -40,7 +40,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
   rune = if runeQueue.len > 0: runeQueue.popFirst else: Rune(0)
   key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
 
-  var ctx = nimwave.initContext(tb)
+  var ctx = nimwave.initContext[void](tb)
   ctx.components["counter"] = counter
   nimwave.render(
     ctx,
