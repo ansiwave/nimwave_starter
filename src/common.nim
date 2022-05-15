@@ -28,9 +28,11 @@ proc counter(ctx: var nimwave.Context[void], id: string, node: JsonNode, childre
   if id notin counts:
     counts[id] = 0
   proc countBtn(ctx: var nimwave.Context[void], childId: string, node: JsonNode, children: seq[JsonNode]) =
+    const text = "Count"
+    ctx = nimwave.slice(ctx, 0, 0, text.runeLen+2, iw.height(ctx.tb))
     if mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse):
       counts[id] += 1
-    nimwave.render(ctx, %* {"type": "hbox", "border": "single", "children": ["Count"]})
+    nimwave.render(ctx, %* {"type": "hbox", "border": "single", "children": [text]})
   ctx.components["count-btn"] = countBtn
   ctx = nimwave.slice(ctx, 0, 0, 20, 3)
   nimwave.render(ctx, %* {"type": "hbox", "children": [{"type": "vbox", "children": ["", $counts[id]]}, {"type": "count-btn"}]})
