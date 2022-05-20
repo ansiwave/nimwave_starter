@@ -22,11 +22,11 @@ proc onKey*(k: iw.Key) =
 proc init*() =
   discard
 
-proc counter(ctx: var nimwave.Context[void], node: JsonNode, children: seq[JsonNode]): nimwave.RenderProc[void] =
+proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
   var count = 0
   return
-    proc (ctx: var nimwave.Context[void], node: JsonNode, children: seq[JsonNode]) =
-      proc countBtn(ctx: var nimwave.Context[void], node: JsonNode, children: seq[JsonNode]) =
+    proc (ctx: var nimwave.Context[void], node: JsonNode) =
+      proc countBtn(ctx: var nimwave.Context[void], node: JsonNode) =
         const text = "Count"
         ctx = nimwave.slice(ctx, 0, 0, text.runeLen+2, iw.height(ctx.tb))
         if mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse):
