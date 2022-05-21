@@ -4,6 +4,8 @@ from os import nil
 from common import nil
 import unicode
 
+var prevTb: iw.TerminalBuffer
+
 proc deinit() =
   iw.deinit()
   terminal.showCursor()
@@ -18,6 +20,7 @@ proc init() =
   )
   terminal.hideCursor()
   common.init()
+  prevTb = iw.initTerminalBuffer(terminal.terminalWidth(), terminal.terminalHeight())
 
 proc tick() =
   let key = iw.getKey()
@@ -29,7 +32,8 @@ proc tick() =
     common.onKey(key)
   var tb = iw.initTerminalBuffer(terminal.terminalWidth(), terminal.terminalHeight())
   common.tick(tb)
-  iw.display(tb)
+  iw.display(tb, prevTb)
+  prevTb = tb
 
 proc main() =
   init()
