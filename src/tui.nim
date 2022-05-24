@@ -12,7 +12,7 @@ proc deinit() =
 
 proc init() =
   terminal.enableTrueColors()
-  iw.init(fullscreen=true, mouse=true)
+  iw.init()
   setControlCHook(
     proc () {.noconv.} =
       deinit()
@@ -22,10 +22,12 @@ proc init() =
   common.init()
   prevTb = iw.initTerminalBuffer(terminal.terminalWidth(), terminal.terminalHeight())
 
+var mouseInfo: iw.MouseInfo
+
 proc tick() =
-  let key = iw.getKey()
+  let key = iw.getKey(mouseInfo)
   if key == iw.Key.Mouse:
-    common.onMouse(iw.gMouseInfo)
+    common.onMouse(mouseInfo)
   elif key in {iw.Key.Space .. iw.Key.Tilde}:
     common.onRune(cast[Rune](key.ord))
   elif key != iw.Key.None:
