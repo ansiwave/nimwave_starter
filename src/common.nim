@@ -1,14 +1,22 @@
 from illwave as iw import `[]`, `[]=`, `==`
 from nimwave import nil
 import unicode, json, tables, deques
+from strutils import nil
+
+type
+  Platform* = enum
+    Tui, Gui, Web,
 
 var
+  platform*: Platform
   mouse: iw.MouseInfo
   mouseQueue: Deque[iw.MouseInfo]
   rune: Rune
   runeQueue: Deque[Rune]
   key: iw.Key
   keyQueue: Deque[iw.Key]
+
+const rollingStone = strutils.splitLines(staticRead("rollingstone.txt"))
 
 proc onMouse*(m: iw.MouseInfo) =
   mouseQueue.addLast(m)
@@ -21,6 +29,18 @@ proc onKey*(k: iw.Key) =
 
 proc init*() =
   discard
+
+proc page(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
+  var scroll = 0
+  return
+    proc (ctx: var nimwave.Context[void], node: JsonNode) =
+      let
+        height = iw.height(ctx.tb)
+        bounds = (0, 0, iw.width(ctx.tb), if platform == Web: -1 else: iw.height(ctx.tb))
+      ctx = nimwave.slice(ctx, 0, scroll, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
+      nimwave.render(ctx, %* {"type": "vbox", "children": node["children"]})
+      scroll += node["scroll"].num.int
+      scroll = scroll.clamp(height - iw.height(ctx.tb) + 1, 0)
 
 proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
   var count = 0
@@ -47,34 +67,29 @@ proc tick*(tb: var iw.TerminalBuffer) =
   if oldCtx.mountedComponents != nil:
     ctx.mountedComponents = oldCtx.mountedComponents
   oldCtx = ctx
+  ctx.statefulComponents["page"] = page
   ctx.statefulComponents["counter"] = counter
   nimwave.render(
     ctx,
     %* {
-      "type": "hbox",
+      "type": "page",
+      "id": "main-page",
+      "scroll":
+        case platform:
+        of Tui, Gui:
+          case key:
+          of iw.Key.Up:
+            1
+          of iw.Key.Down:
+            -1
+          else:
+            0
+        of Web:
+          0
+      ,
       "children": [
-        {
-          "type": "vbox",
-          "id": "hello",
-          "border": "single",
-          "children": [
-            {
-              "type": "vbox",
-              "children": [
-                {"type": "vbox", "border": "single"},
-                {"type": "vbox", "border": "single"},
-              ]
-            },
-          ],
-        },
-        {
-          "type": "vbox",
-          "id": "goodbye",
-          "border": "single",
-          "children": [
-            {"type": "counter", "id": "counter"},
-          ],
-        },
+        {"type": "counter", "id": "counter"},
+        rollingStone,
       ],
     }
   )

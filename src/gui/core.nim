@@ -9,6 +9,8 @@ from ../common import nil
 from illwave as iw import `[]`, `[]=`
 import unicode
 
+common.platform = common.Gui
+
 type
   Game* = object of RootGame
     deltaTime*: float

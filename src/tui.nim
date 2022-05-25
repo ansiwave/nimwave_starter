@@ -4,6 +4,8 @@ from os import nil
 from common import nil
 import unicode
 
+common.platform = common.Tui
+
 var prevTb: iw.TerminalBuffer
 
 proc deinit() =

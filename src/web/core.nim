@@ -6,6 +6,8 @@ from nimwave/web/emscripten import nil
 from nimwave/tui/termtools/runewidth import nil
 from strutils import format
 
+common.platform = common.Web
+
 proc onKeyPress*(key: iw.Key) =
   common.onKey(key)
 
