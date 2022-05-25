@@ -39,7 +39,11 @@ proc page(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[vo
       let
         width = iw.width(ctx.tb)
         height = iw.height(ctx.tb)
-        bounds = (0, 0, iw.width(ctx.tb), if platform == Web: -1 else: iw.height(ctx.tb))
+        bounds =
+          if platform == Web:
+            (0, 0, -1, -1)
+          else:
+            (0, 0, iw.width(ctx.tb), iw.height(ctx.tb))
       ctx = nimwave.slice(ctx, scrollX, scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
       nimwave.render(ctx, %* {"type": "vbox", "children": node["children"]})
       scrollX += node["scroll-x"].num.int
