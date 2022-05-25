@@ -31,16 +31,21 @@ proc init*() =
   discard
 
 proc page(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
-  var scroll = 0
+  var
+    scrollX = 0
+    scrollY = 0
   return
     proc (ctx: var nimwave.Context[void], node: JsonNode) =
       let
+        width = iw.width(ctx.tb)
         height = iw.height(ctx.tb)
         bounds = (0, 0, iw.width(ctx.tb), if platform == Web: -1 else: iw.height(ctx.tb))
-      ctx = nimwave.slice(ctx, 0, scroll, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
+      ctx = nimwave.slice(ctx, scrollX, scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
       nimwave.render(ctx, %* {"type": "vbox", "children": node["children"]})
-      scroll += node["scroll"].num.int
-      scroll = scroll.clamp(height - iw.height(ctx.tb) + 1, 0)
+      scrollX += node["scroll-x"].num.int
+      scrollX = scrollX.clamp(width - iw.width(ctx.tb), 0)
+      scrollY += node["scroll-y"].num.int
+      scrollY = scrollY.clamp(height - iw.height(ctx.tb) + 1, 0)
 
 proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
   var count = 0
@@ -74,7 +79,20 @@ proc tick*(tb: var iw.TerminalBuffer) =
     %* {
       "type": "page",
       "id": "main-page",
-      "scroll":
+      "scroll-x":
+        case platform:
+        of Tui, Gui:
+          case key:
+          of iw.Key.Left:
+            1
+          of iw.Key.Right:
+            -1
+          else:
+            0
+        of Web:
+          0
+      ,
+      "scroll-y":
         case platform:
         of Tui, Gui:
           case key:
