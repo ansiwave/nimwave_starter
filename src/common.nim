@@ -65,19 +65,16 @@ proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc
       ctx = nimwave.slice(ctx, 0, 0, 20, 3)
       nimwave.render(ctx, %* {"type": "hbox", "children": [{"type": "vbox", "children": ["", $count]}, {"type": "count-btn"}]})
 
-var oldCtx: nimwave.Context[void]
+var ctx = nimwave.initContext[void]()
+ctx.statefulComponents["page"] = page
+ctx.statefulComponents["counter"] = counter
 
 proc tick*(tb: var iw.TerminalBuffer) =
   mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
   rune = if runeQueue.len > 0: runeQueue.popFirst else: Rune(0)
   key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
 
-  var ctx = nimwave.initContext[void](tb)
-  if oldCtx.mountedComponents != nil:
-    ctx.mountedComponents = oldCtx.mountedComponents
-  oldCtx = ctx
-  ctx.statefulComponents["page"] = page
-  ctx.statefulComponents["counter"] = counter
+  ctx.tb = tb
   nimwave.render(
     ctx,
     %* {
