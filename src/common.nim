@@ -45,7 +45,7 @@ proc page(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[vo
           else:
             (0, 0, iw.width(ctx.tb), iw.height(ctx.tb))
       ctx = nimwave.slice(ctx, scrollX, scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
-      nimwave.render(ctx, %* {"type": "vbox", "children": node["children"]})
+      nimwave.render(ctx, %* {"type": "nimwave.vbox", "children": node["children"]})
       scrollX += node["scroll-x"].num.int
       scrollX = scrollX.clamp(width - iw.width(ctx.tb), 0)
       scrollY += node["scroll-y"].num.int
@@ -60,10 +60,10 @@ proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc
         ctx = nimwave.slice(ctx, 0, 0, text.runeLen+2, iw.height(ctx.tb))
         if mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse):
           count += 1
-        nimwave.render(ctx, %* {"type": "hbox", "border": "single", "children": [text]})
+        nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [text]})
       ctx.components["count-btn"] = countBtn
       ctx = nimwave.slice(ctx, 0, 0, 20, 3)
-      nimwave.render(ctx, %* {"type": "hbox", "children": [{"type": "vbox", "children": ["", $count]}, {"type": "count-btn"}]})
+      nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [{"type": "nimwave.vbox", "children": ["", $count]}, {"type": "count-btn"}]})
 
 var ctx = nimwave.initContext[void]()
 ctx.statefulComponents["page"] = page
