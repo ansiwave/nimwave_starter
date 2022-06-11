@@ -47,9 +47,13 @@ proc page(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[vo
       ctx = nimwave.slice(ctx, scrollX, scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
       nimwave.render(ctx, %* {"type": "nimwave.vbox", "children": node["children"]})
       scrollX += node["scroll-x"].num.int
-      scrollX = scrollX.clamp(width - iw.width(ctx.tb), 0)
+      let minX = width - iw.width(ctx.tb)
+      if minX < 0:
+        scrollX = scrollX.clamp(minX, 0)
       scrollY += node["scroll-y"].num.int
-      scrollY = scrollY.clamp(height - iw.height(ctx.tb) + 1, 0)
+      let minY = height - iw.height(ctx.tb) + 1
+      if minY < 0:
+        scrollY = scrollY.clamp(minY, 0)
 
 proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
   var count = 0
