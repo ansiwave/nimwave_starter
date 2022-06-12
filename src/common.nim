@@ -84,11 +84,33 @@ proc textField(ctx: var nimwave.Context[void], node: JsonNode, data: ref TextFie
   let id = node["id"].str
   return
     proc (ctx: var nimwave.Context[void], node: JsonNode) =
-      proc textArea(ctx: var nimwave.Context[void], node: JsonNode) =
-        nimwave.render(ctx, %* {"type": "scroll", "child": data[].text, "id": id & "-scroll"})
-      ctx.components["text-area"] = textArea
+      let
+        key = iw.Key(node["key"].num.int)
+        rune = Rune(node["rune"].num.int)
+      case key:
+      of iw.Key.Left:
+        data[].cursorX -= 1
+        if data[].cursorX < 0:
+          data[].cursorX = 0
+      of iw.Key.Right:
+        data[].cursorX += 1
+        if data[].cursorX > data[].text.runeLen:
+          data[].cursorX = data[].text.runeLen
+      else:
+        discard
+      if rune.ord >= 32:
+        let
+          line = data[].text.toRunes
+          before = line[0 ..< data[].cursorX]
+          after = line[data[].cursorX ..< line.len]
+        data[].text = $before & $rune & $after
+        data[].cursorX += 1
       ctx = nimwave.slice(ctx, 0, 0, 10, 3)
-      nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [{"type": "text-area"}]})
+      nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [{"type": "scroll", "child": data[].text, "id": id & "-scroll"}]})
+      var cell = ctx.tb[1 + data[].cursorX, 1]
+      cell.bg = iw.bgYellow
+      cell.fg = iw.fgBlack
+      ctx.tb[1 + data[].cursorX, 1] = cell
 
 proc tempConverter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
   var data = new TextFieldState
@@ -96,7 +118,7 @@ proc tempConverter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.Rend
   return
     proc (ctx: var nimwave.Context[void], node: JsonNode) =
       ctx.components["text-field"] = comp
-      nimwave.render(ctx, %* {"type": "text-field"})
+      nimwave.render(ctx, %* {"type": "text-field", "key": key.ord, "rune": rune.ord})
 
 var ctx = nimwave.initContext[void]()
 ctx.statefulComponents["scroll"] = scroll
