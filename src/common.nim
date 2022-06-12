@@ -71,7 +71,12 @@ proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc
       ctx = nimwave.slice(ctx, 0, 0, 20, 3)
       nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [{"type": "nimwave.vbox", "children": ["", $count]}, {"type": "count-btn"}]})
 
-proc textField(ctx: var nimwave.Context[void], node: JsonNode, data: ref tuple[text: string, cursorX: int]): nimwave.RenderProc[void] =
+type
+  TextFieldState = object
+    text: string
+    cursorX: int
+
+proc textField(ctx: var nimwave.Context[void], node: JsonNode, data: ref TextFieldState): nimwave.RenderProc[void] =
   let id = node["id"].str
   return
     proc (ctx: var nimwave.Context[void], node: JsonNode) =
@@ -82,7 +87,7 @@ proc textField(ctx: var nimwave.Context[void], node: JsonNode, data: ref tuple[t
       nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [{"type": "text-area"}]})
 
 proc tempConverter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
-  var data = new tuple[text: string, cursorX: int]
+  var data = new TextFieldState
   let comp = textField(ctx, node, data)
   return
     proc (ctx: var nimwave.Context[void], node: JsonNode) =
