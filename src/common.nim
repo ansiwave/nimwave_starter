@@ -45,7 +45,7 @@ proc scroll(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[
           else:
             (0, 0, iw.width(ctx.tb), iw.height(ctx.tb))
       var ctx = nimwave.slice(ctx, scrollX, scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
-      nimwave.render(ctx, %* {"type": "nimwave.vbox", "children": node["children"]})
+      nimwave.render(ctx, %* node["child"])
       if "scroll-x-change" in node:
         scrollX += node["scroll-x-change"].num.int
         let minX = width - iw.width(ctx.tb)
@@ -79,7 +79,7 @@ proc textField(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderPr
   return
     proc (ctx: var nimwave.Context[void], node: JsonNode) =
       proc textArea(ctx: var nimwave.Context[void], node: JsonNode) =
-        nimwave.render(ctx, %* {"type": "scroll", "children": [text], "id": id & "-scroll"})
+        nimwave.render(ctx, %* {"type": "scroll", "child": text, "id": id & "-scroll"})
       ctx.components["text-area"] = textArea
       ctx = nimwave.slice(ctx, 0, 0, 10, 3)
       nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [{"type": "text-area"}]})
@@ -126,11 +126,16 @@ proc tick*(tb: var iw.TerminalBuffer) =
         of Web:
           0
       ,
-      "children": [
-        {"type": "counter", "id": "counter"},
-        {"type": "text-field", "id": "celsius"},
-        rollingStone,
-      ],
+      "child":
+        {
+          "type": "nimwave.vbox",
+          "children": [
+            {"type": "counter", "id": "counter"},
+            {"type": "text-field", "id": "celsius"},
+            rollingStone,
+          ]
+        }
+      ,
     }
   )
 
