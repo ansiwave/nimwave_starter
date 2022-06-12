@@ -30,10 +30,10 @@ proc onKey*(k: iw.Key) =
 proc init*() =
   discard
 
-proc page(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
+proc scroll(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
   var
-    scrollX = 0
-    scrollY = 0
+    scrollX = if "scroll-x-start" in node: node["scroll-x-start"].num.int else: 0
+    scrollY = if "scroll-y-start" in node: node["scroll-y-start"].num.int else: 0
   return
     proc (ctx: var nimwave.Context[void], node: JsonNode) =
       let
@@ -44,16 +44,18 @@ proc page(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[vo
             (0, 0, -1, -1)
           else:
             (0, 0, iw.width(ctx.tb), iw.height(ctx.tb))
-      ctx = nimwave.slice(ctx, scrollX, scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
+      var ctx = nimwave.slice(ctx, scrollX, scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
       nimwave.render(ctx, %* {"type": "nimwave.vbox", "children": node["children"]})
-      scrollX += node["scroll-x"].num.int
-      let minX = width - iw.width(ctx.tb)
-      if minX < 0:
-        scrollX = scrollX.clamp(minX, 0)
-      scrollY += node["scroll-y"].num.int
-      let minY = height - iw.height(ctx.tb) + 1
-      if minY < 0:
-        scrollY = scrollY.clamp(minY, 0)
+      if "scroll-x-change" in node:
+        scrollX += node["scroll-x-change"].num.int
+        let minX = width - iw.width(ctx.tb)
+        if minX < 0:
+          scrollX = scrollX.clamp(minX, 0)
+      if "scroll-y-change" in node:
+        scrollY += node["scroll-y-change"].num.int
+        let minY = height - iw.height(ctx.tb) + 1
+        if minY < 0:
+          scrollY = scrollY.clamp(minY, 0)
 
 proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
   var count = 0
@@ -69,9 +71,23 @@ proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc
       ctx = nimwave.slice(ctx, 0, 0, 20, 3)
       nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [{"type": "nimwave.vbox", "children": ["", $count]}, {"type": "count-btn"}]})
 
+proc textField(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
+  var
+    text = "Hello, world!"
+    cursorX = 0
+  let id = node["id"].str
+  return
+    proc (ctx: var nimwave.Context[void], node: JsonNode) =
+      proc textArea(ctx: var nimwave.Context[void], node: JsonNode) =
+        nimwave.render(ctx, %* {"type": "scroll", "children": [text], "id": id & "-scroll"})
+      ctx.components["text-area"] = textArea
+      ctx = nimwave.slice(ctx, 0, 0, 10, 3)
+      nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [{"type": "text-area"}]})
+
 var ctx = nimwave.initContext[void]()
-ctx.statefulComponents["page"] = page
+ctx.statefulComponents["scroll"] = scroll
 ctx.statefulComponents["counter"] = counter
+ctx.statefulComponents["text-field"] = textField
 
 proc tick*(tb: var iw.TerminalBuffer) =
   mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
@@ -82,9 +98,9 @@ proc tick*(tb: var iw.TerminalBuffer) =
   nimwave.render(
     ctx,
     %* {
-      "type": "page",
+      "type": "scroll",
       "id": "main-page",
-      "scroll-x":
+      "scroll-x-change":
         case platform:
         of Tui, Gui:
           case key:
@@ -97,7 +113,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
         of Web:
           0
       ,
-      "scroll-y":
+      "scroll-y-change":
         case platform:
         of Tui, Gui:
           case key:
@@ -112,6 +128,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
       ,
       "children": [
         {"type": "counter", "id": "counter"},
+        {"type": "text-field", "id": "celsius"},
         rollingStone,
       ],
     }
