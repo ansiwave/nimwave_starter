@@ -71,23 +71,28 @@ proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc
       ctx = nimwave.slice(ctx, 0, 0, 20, 3)
       nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [{"type": "nimwave.vbox", "children": ["", $count]}, {"type": "count-btn"}]})
 
-proc textField(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
-  var
-    text = "Hello, world!"
-    cursorX = 0
+proc textField(ctx: var nimwave.Context[void], node: JsonNode, data: ref tuple[text: string, cursorX: int]): nimwave.RenderProc[void] =
   let id = node["id"].str
   return
     proc (ctx: var nimwave.Context[void], node: JsonNode) =
       proc textArea(ctx: var nimwave.Context[void], node: JsonNode) =
-        nimwave.render(ctx, %* {"type": "scroll", "child": text, "id": id & "-scroll"})
+        nimwave.render(ctx, %* {"type": "scroll", "child": data[].text, "id": id & "-scroll"})
       ctx.components["text-area"] = textArea
       ctx = nimwave.slice(ctx, 0, 0, 10, 3)
       nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [{"type": "text-area"}]})
 
+proc tempConverter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
+  var data = new tuple[text: string, cursorX: int]
+  let comp = textField(ctx, node, data)
+  return
+    proc (ctx: var nimwave.Context[void], node: JsonNode) =
+      ctx.components["text-field"] = comp
+      nimwave.render(ctx, %* {"type": "text-field"})
+
 var ctx = nimwave.initContext[void]()
 ctx.statefulComponents["scroll"] = scroll
 ctx.statefulComponents["counter"] = counter
-ctx.statefulComponents["text-field"] = textField
+ctx.statefulComponents["temp-converter"] = tempConverter
 
 proc tick*(tb: var iw.TerminalBuffer) =
   mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
@@ -131,7 +136,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
           "type": "nimwave.vbox",
           "children": [
             {"type": "counter", "id": "counter"},
-            {"type": "text-field", "id": "celsius"},
+            {"type": "temp-converter", "id": "temp-converter"},
             rollingStone,
           ]
         }
