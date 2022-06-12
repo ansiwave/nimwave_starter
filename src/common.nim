@@ -51,11 +51,15 @@ proc scroll(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[
         let minX = width - iw.width(ctx.tb)
         if minX < 0:
           scrollX = scrollX.clamp(minX, 0)
+        else:
+          scrollX = 0
       if "scroll-y-change" in node:
         scrollY += node["scroll-y-change"].num.int
         let minY = height - iw.height(ctx.tb) + 1
         if minY < 0:
           scrollY = scrollY.clamp(minY, 0)
+        else:
+          scrollY = 0
 
 proc counter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
   var count = 0
