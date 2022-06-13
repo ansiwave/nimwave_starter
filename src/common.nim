@@ -132,6 +132,10 @@ proc textField(ctx: var nimwave.Context[State], node: JsonNode, data: ref TextFi
         data[].cursorX += 1
         if data[].cursorX > data[].text.runeLen:
           data[].cursorX = data[].text.runeLen
+      of iw.Key.Home:
+        data[].cursorX = 0
+      of iw.Key.End:
+        data[].cursorX = data[].text.runeLen
       else:
         discard
       if rune.ord >= 32:
