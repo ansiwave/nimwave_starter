@@ -91,8 +91,8 @@ proc textField(ctx: var nimwave.Context[State], node: JsonNode, data: ref TextFi
   return
     proc (ctx: var nimwave.Context[State], node: JsonNode) =
       let
-        key = iw.Key(node["key"].num.int)
-        rune = Rune(node["rune"].num.int)
+        key = if "key" in node: iw.Key(node["key"].num.int) else: iw.Key.None
+        rune = if "rune" in node: Rune(node["rune"].num.int) else: Rune(0)
       case key:
       of iw.Key.Left:
         data[].cursorX -= 1
@@ -126,7 +126,16 @@ proc tempConverter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.Ren
       ctx = nimwave.slice(ctx, 0, 0, 10, 3)
       ctx.components["text-field"] = comp
       let focused = addFocusArea(ctx)
-      nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": if focused: "double" else: "single", "children": [{"type": "text-field", "key": key.ord, "rune": rune.ord}]})
+      nimwave.render(ctx, %* {
+        "type": "nimwave.hbox",
+        "border": if focused: "double" else: "single",
+        "children": [
+          if focused:
+            %* {"type": "text-field", "key": key.ord, "rune": rune.ord}
+          else:
+            %* {"type": "text-field"}
+        ]
+      })
 
 proc lyrics(ctx: var nimwave.Context[State], node: JsonNode) =
   const rollingStone = strutils.splitLines(staticRead("rollingstone.txt"))
