@@ -70,6 +70,7 @@ proc counter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderPro
   var count = 0
   return
     proc (ctx: var nimwave.Context[State], node: JsonNode) =
+      ctx = nimwave.slice(ctx, 0, 0, 20, 3)
       let focused = addFocusArea(ctx)
       proc countBtn(ctx: var nimwave.Context[State], node: JsonNode) =
         const text = "Count"
@@ -78,7 +79,6 @@ proc counter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderPro
           count += 1
         nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [text], "border": if focused: "double" else: "single"})
       ctx.components["count-btn"] = countBtn
-      ctx = nimwave.slice(ctx, 0, 0, 20, 3)
       nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [{"type": "nimwave.vbox", "children": ["", $count]}, {"type": "count-btn"}]})
 
 type
@@ -144,6 +144,13 @@ proc tick*(tb: var iw.TerminalBuffer) =
   mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
   rune = if runeQueue.len > 0: runeQueue.popFirst else: Rune(0)
   key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
+
+  if mouse.button == iw.MouseButton.mbLeft and mouse.action == iw.MouseButtonAction.mbaPressed:
+    for i in 0 ..< ctx.data.focusAreas[].len:
+      let area = ctx.data.focusAreas[i]
+      if iw.contains(area, mouse):
+        ctx.data.focusIndex = i
+        break
 
   let focusChange =
     case key:
