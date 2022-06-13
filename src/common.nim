@@ -20,6 +20,15 @@ var
   keyQueue: Deque[iw.Key]
 
 proc onMouse*(m: iw.MouseInfo) =
+  if platform != Web:
+    # treat scrolling up/down the same as arrow up/down
+    case m.scrollDir:
+    of iw.ScrollDirection.sdUp:
+      keyQueue.addLast(iw.Key.Up)
+    of iw.ScrollDirection.sdDown:
+      keyQueue.addLast(iw.Key.Down)
+    else:
+      discard
   mouseQueue.addLast(m)
 
 proc onRune*(r: Rune) =
