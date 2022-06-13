@@ -35,10 +35,12 @@ proc addFocusArea(ctx: var nimwave.Context[State]): bool =
   result = ctx.data.focusIndex == ctx.data.focusAreas[].len
   ctx.data.focusAreas[].add(ctx.tb)
 
-proc scroll(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc[State] =
-  var
-    scrollX = if "scroll-x-start" in node: node["scroll-x-start"].num.int else: 0
-    scrollY = if "scroll-y-start" in node: node["scroll-y-start"].num.int else: 0
+type
+  ScrollState = object
+    scrollX: int
+    scrollY: int
+
+proc scroll(ctx: var nimwave.Context[State], node: JsonNode, data: ref ScrollState): nimwave.RenderProc[State] =
   return
     proc (ctx: var nimwave.Context[State], node: JsonNode) =
       let
@@ -49,22 +51,26 @@ proc scroll(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc
             (0, 0, -1, -1)
           else:
             (0, 0, iw.width(ctx.tb), iw.height(ctx.tb))
-      var ctx = nimwave.slice(ctx, scrollX, scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
+      var ctx = nimwave.slice(ctx, data[].scrollX, data[].scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
       nimwave.render(ctx, %* node["child"])
       if "scroll-x-change" in node:
-        scrollX += node["scroll-x-change"].num.int
+        data[].scrollX += node["scroll-x-change"].num.int
         let minX = width - iw.width(ctx.tb)
         if minX < 0:
-          scrollX = scrollX.clamp(minX, 0)
+          data[].scrollX = data[].scrollX.clamp(minX, 0)
         else:
-          scrollX = 0
+          data[].scrollX = 0
       if "scroll-y-change" in node:
-        scrollY += node["scroll-y-change"].num.int
+        data[].scrollY += node["scroll-y-change"].num.int
         let minY = height - iw.height(ctx.tb)
         if minY < 0:
-          scrollY = scrollY.clamp(minY, 0)
+          data[].scrollY = data[].scrollY.clamp(minY, 0)
         else:
-          scrollY = 0
+          data[].scrollY = 0
+
+proc scroll(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc[State] =
+  var data = new ScrollState
+  return scroll(ctx, node, data)
 
 proc counter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc[State] =
   var count = 0
