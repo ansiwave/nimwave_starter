@@ -105,20 +105,21 @@ proc textField(ctx: var nimwave.Context[void], node: JsonNode, data: ref TextFie
           after = line[data[].cursorX ..< line.len]
         data[].text = $before & $rune & $after
         data[].cursorX += 1
-      ctx = nimwave.slice(ctx, 0, 0, 10, 3)
-      nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [{"type": "scroll", "child": data[].text, "id": id & "-scroll"}]})
-      var cell = ctx.tb[1 + data[].cursorX, 1]
+      ctx = nimwave.slice(ctx, 0, 0, iw.width(ctx.tb), 1)
+      nimwave.render(ctx, %* {"type": "scroll", "child": data[].text, "id": id & "-scroll"})
+      var cell = ctx.tb[data[].cursorX, 0]
       cell.bg = iw.bgYellow
       cell.fg = iw.fgBlack
-      ctx.tb[1 + data[].cursorX, 1] = cell
+      ctx.tb[data[].cursorX, 0] = cell
 
 proc tempConverter(ctx: var nimwave.Context[void], node: JsonNode): nimwave.RenderProc[void] =
   var data = new TextFieldState
   let comp = textField(ctx, node, data)
   return
     proc (ctx: var nimwave.Context[void], node: JsonNode) =
+      ctx = nimwave.slice(ctx, 0, 0, 10, 3)
       ctx.components["text-field"] = comp
-      nimwave.render(ctx, %* {"type": "text-field", "key": key.ord, "rune": rune.ord})
+      nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [{"type": "text-field", "key": key.ord, "rune": rune.ord}]})
 
 var ctx = nimwave.initContext[void]()
 ctx.statefulComponents["scroll"] = scroll
