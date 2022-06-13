@@ -100,6 +100,20 @@ proc textField(ctx: var nimwave.Context[State], node: JsonNode, data: ref TextFi
         key = if "key" in node: iw.Key(node["key"].num.int) else: iw.Key.None
         rune = if "rune" in node: Rune(node["rune"].num.int) else: Rune(0)
       case key:
+      of iw.Key.Backspace:
+        if data[].cursorX > 0:
+          let
+            line = data[].text.toRunes
+            x = data[].cursorX - 1
+            newLine = $line[0 ..< x] & $line[x + 1 ..< line.len]
+          data[].text = newLine
+          data[].cursorX -= 1
+      of iw.Key.Delete:
+        if data[].cursorX < data[].text.runeLen:
+          let
+            line = data[].text.toRunes
+            newLine = $line[0 ..< data[].cursorX] & $line[data[].cursorX + 1 ..< line.len]
+          data[].text = newLine
       of iw.Key.Left:
         data[].cursorX -= 1
         if data[].cursorX < 0:
