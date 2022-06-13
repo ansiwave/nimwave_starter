@@ -56,7 +56,7 @@ proc scroll(ctx: var nimwave.Context[State], node: JsonNode, data: ref ScrollSta
         width = iw.width(ctx.tb)
         height = iw.height(ctx.tb)
         bounds =
-          if platform == Web:
+          if "fit-content" in node and node["fit-content"].bval:
             (0, 0, -1, -1)
           else:
             (0, 0, iw.width(ctx.tb), iw.height(ctx.tb))
@@ -218,6 +218,9 @@ proc tick*(tb: var iw.TerminalBuffer) =
     %* {
       "type": "scroll",
       "id": "main-page",
+      # on the web, we want to use native scrolling,
+      # so make this component expand to fit its content
+      "fit-content": platform == Web,
       "scroll-x-change":
         case platform:
         of Tui, Gui:
