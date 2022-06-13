@@ -113,10 +113,11 @@ proc textField(ctx: var nimwave.Context[State], node: JsonNode, data: ref TextFi
         data[].cursorX += 1
       ctx = nimwave.slice(ctx, 0, 0, iw.width(ctx.tb), 1)
       nimwave.render(ctx, %* {"type": "scroll", "child": data[].text, "id": id & "-scroll"})
-      var cell = ctx.tb[data[].cursorX, 0]
-      cell.bg = iw.bgYellow
-      cell.fg = iw.fgBlack
-      ctx.tb[data[].cursorX, 0] = cell
+      if "show-cursor" in node and node["show-cursor"].bval:
+        var cell = ctx.tb[data[].cursorX, 0]
+        cell.bg = iw.bgYellow
+        cell.fg = iw.fgBlack
+        ctx.tb[data[].cursorX, 0] = cell
 
 proc tempConverter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc[State] =
   var data = new TextFieldState
@@ -131,7 +132,7 @@ proc tempConverter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.Ren
         "border": if focused: "double" else: "single",
         "children": [
           if focused:
-            %* {"type": "text-field", "key": key.ord, "rune": rune.ord}
+            %* {"type": "text-field", "key": key.ord, "rune": rune.ord, "show-cursor": true}
           else:
             %* {"type": "text-field"}
         ]
