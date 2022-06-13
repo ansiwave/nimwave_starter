@@ -182,7 +182,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
         ctx.data.focusIndex = i
         break
 
-  let focusChange =
+  var focusChange =
     case key:
     of iw.Key.Up:
       -1
@@ -190,8 +190,17 @@ proc tick*(tb: var iw.TerminalBuffer) =
       1
     else:
       0
+  if focusChange != 0 and ctx.data.focusAreas[].len > 0:
+    # if the next focus area is out of view, don't change the focus
+    let
+      focusIndex = min(max(0, ctx.data.focusIndex + focusChange), ctx.data.focusAreas[].len-1)
+      focusArea = ctx.data.focusAreas[focusIndex]
+    if iw.y(focusArea) < 0 or
+      iw.y(focusArea) + iw.height(focusArea) > iw.height(tb) or
+      ctx.data.focusIndex + focusChange < 0 or
+      ctx.data.focusIndex + focusChange >= ctx.data.focusAreas[].len:
+      focusChange = 0
   ctx.data.focusIndex += focusChange
-  ctx.data.focusIndex = min(max(0, ctx.data.focusIndex), ctx.data.focusAreas[].len-1)
   ctx.data.focusAreas[] = @[]
 
   ctx.tb = tb
@@ -214,16 +223,19 @@ proc tick*(tb: var iw.TerminalBuffer) =
           0
       ,
       "scroll-y-change":
-        case platform:
-        of Tui, Gui:
-          case key:
-          of iw.Key.Up:
-            1
-          of iw.Key.Down:
-            -1
-          else:
+        if focusChange == 0:
+          case platform:
+          of Tui, Gui:
+            case key:
+            of iw.Key.Up:
+              1
+            of iw.Key.Down:
+              -1
+            else:
+              0
+          of Web:
             0
-        of Web:
+        else:
           0
       ,
       "child":
