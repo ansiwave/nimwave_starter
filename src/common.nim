@@ -90,7 +90,7 @@ proc counter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderPro
       proc countBtn(ctx: var nimwave.Context[State], node: JsonNode) =
         const text = "Count"
         ctx = nimwave.slice(ctx, 0, 0, text.runeLen+2, iw.height(ctx.tb))
-        if (mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse)) or key == iw.Key.Enter:
+        if (mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse)) or (focused and key == iw.Key.Enter):
           count += 1
         nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [text], "border": if focused: "double" else: "single"})
       ctx.components["count-btn"] = countBtn
