@@ -103,6 +103,7 @@ type
 
 proc textField(ctx: var nimwave.Context[State], node: JsonNode, data: ref TextFieldState): nimwave.RenderProc[State] =
   let id = node["id"].str
+  var scrollData = new ScrollState
   return
     proc (ctx: var nimwave.Context[State], node: JsonNode) =
       let
@@ -140,13 +141,28 @@ proc textField(ctx: var nimwave.Context[State], node: JsonNode, data: ref TextFi
           after = line[data[].cursorX ..< line.len]
         data[].text = $before & $rune & $after
         data[].cursorX += 1
+      # create scroll component
+      proc textFieldScroll(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc[State] =
+        return scroll(ctx, node, scrollData)
+      ctx.statefulComponents["text-field-scroll"] = textFieldScroll
+      # update scroll position
+      let cursorXDiff = scrollData[].scrollX + data[].cursorX
+      if cursorXDiff >= iw.width(ctx.tb) - 1:
+        scrollData[].scrollX = iw.width(ctx.tb) - 1 - data[].cursorX
+      elif cursorXDiff < 0:
+        scrollData[].scrollX = 0 - data[].cursorX
+      # render
       ctx = nimwave.slice(ctx, 0, 0, iw.width(ctx.tb), 1)
-      nimwave.render(ctx, %* {"type": "scroll", "child": data[].text, "id": id & "-scroll"})
+      nimwave.render(ctx, %* {
+        "type": "text-field-scroll",
+        "child": data[].text,
+        "id": id & "-scroll",
+      })
       if "show-cursor" in node and node["show-cursor"].bval:
-        var cell = ctx.tb[data[].cursorX, 0]
+        var cell = ctx.tb[scrollData[].scrollX + data[].cursorX, 0]
         cell.bg = iw.bgYellow
         cell.fg = iw.fgBlack
-        ctx.tb[data[].cursorX, 0] = cell
+        ctx.tb[scrollData[].scrollX + data[].cursorX, 0] = cell
 
 proc tempConverter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc[State] =
   var data = new TextFieldState
