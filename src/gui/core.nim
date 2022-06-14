@@ -70,6 +70,14 @@ proc onMouseMove*(xpos: float, ypos: float) =
 proc onWindowResize*(windowWidth: int, windowHeight: int) =
   discard
 
+proc onScroll*(xoffset: float, yoffset: float) =
+  var info: iw.MouseInfo
+  if yoffset < 0:
+    info.scrollDir = iw.ScrollDirection.sdDown
+  elif yoffset > 0:
+    info.scrollDir = iw.ScrollDirection.sdUp
+  common.onMouse(info)
+
 proc init*(game: var Game) =
   doAssert glInit()
 
