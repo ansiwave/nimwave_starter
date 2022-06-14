@@ -131,8 +131,10 @@ proc tick*(tb: var iw.TerminalBuffer) =
   rune = if runeQueue.len > 0: runeQueue.popFirst else: Rune(0)
   key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
 
+  # change focus via mouse click
   if mouse.button == iw.MouseButton.mbLeft and mouse.action == iw.MouseButtonAction.mbaPressed:
-    for i in 0 ..< ctx.data.focusAreas[].len:
+    # check the last focus areas first so child components are checked before their parents
+    for i in countDown(ctx.data.focusAreas[].len-1, 0):
       let area = ctx.data.focusAreas[i]
       if iw.contains(area, mouse):
         ctx.data.focusIndex = i
