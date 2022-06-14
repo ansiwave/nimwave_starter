@@ -88,7 +88,7 @@ proc mountCounter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.Rend
   var count = 0
   return
     proc (ctx: var nimwave.Context[State], node: JsonNode) =
-      ctx = nimwave.slice(ctx, 0, 0, 20, 3)
+      ctx = nimwave.slice(ctx, 0, 0, 15, 3)
       let focused = addFocusArea(ctx)
       proc renderCountBtn(ctx: var nimwave.Context[State], node: JsonNode) =
         const text = "Count"
