@@ -193,21 +193,43 @@ proc mountTemperatureTextField(ctx: var nimwave.Context[State], node: JsonNode, 
 
 proc mountTemperatureConverter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc[State] =
   var celsiusState = new TextFieldState
+  celsiusState.text = "5.0"
   let renderCelsius = mountTemperatureTextField(ctx, node, celsiusState)
   var fahrenState = new TextFieldState
+  fahrenState.text = "41.0"
   let renderFahren = mountTemperatureTextField(ctx, node, fahrenState)
   return
     proc (ctx: var nimwave.Context[State], node: JsonNode) =
       ctx = nimwave.slice(ctx, 0, 0, iw.width(ctx.tb), 3)
       ctx.components["celsius"] = renderCelsius
       ctx.components["fahrenheit"] = renderFahren
+      let
+        oldCelsius = celsiusState[].text
+        oldFahren = fahrenState[].text
       nimwave.render(ctx, %* {
         "type": "nimwave.hbox",
         "children": [
           {"type": "celsius", "id": "celsius"},
+          {"type": "nimwave.hbox", "border": "none", "children": ["Celsius ="]},
           {"type": "fahrenheit", "id": "fahrenheit"},
+          {"type": "nimwave.hbox", "border": "none", "children": ["Fahrenheit"]},
         ]
       })
+      let
+        newCelsius = celsiusState[].text
+        newFahren = fahrenState[].text
+      if oldCelsius != newCelsius:
+        try:
+          let c = strutils.parseFloat(newCelsius)
+          fahrenState[].text = $(c * (9 / 5) + 32f)
+        except ValueError:
+          fahrenState[].text = ""
+      elif oldFahren != newFahren:
+        try:
+          let f = strutils.parseFloat(newFahren)
+          celsiusState[].text = $((f - 32) * (5 / 9))
+        except ValueError:
+          celsiusState[].text = ""
 
 proc renderLyrics(ctx: var nimwave.Context[State], node: JsonNode) =
   const rollingStone = strutils.splitLines(staticRead("rollingstone.txt"))
