@@ -53,22 +53,28 @@ proc renderScroll(ctx: var nimwave.Context[State], node: JsonNode, state: ref Sc
   let
     width = iw.width(ctx.tb)
     height = iw.height(ctx.tb)
-    bounds =
-      if "fit-content" in node and node["fit-content"].bval:
-        (0, 0, -1, -1)
+    boundsWidth =
+      if "grow-x" in node and node["grow-x"].bval:
+        -1
       else:
-        (0, 0, iw.width(ctx.tb), iw.height(ctx.tb))
-  var ctx = nimwave.slice(ctx, state[].scrollX, state[].scrollY, iw.width(ctx.tb), iw.height(ctx.tb), bounds)
+        width
+    boundsHeight =
+      if "grow-y" in node and node["grow-y"].bval:
+        -1
+      else:
+        height
+    bounds = (0, 0, boundsWidth, boundsHeight)
+  var ctx = nimwave.slice(ctx, state[].scrollX, state[].scrollY, width, height, bounds)
   nimwave.render(ctx, %* node["child"])
-  if "scroll-x-change" in node:
-    state[].scrollX += node["scroll-x-change"].num.int
+  if "change-scroll-x" in node:
+    state[].scrollX += node["change-scroll-x"].num.int
     let minX = width - iw.width(ctx.tb)
     if minX < 0:
       state[].scrollX = state[].scrollX.clamp(minX, 0)
     else:
       state[].scrollX = 0
-  if "scroll-y-change" in node:
-    state[].scrollY += node["scroll-y-change"].num.int
+  if "change-scroll-y" in node:
+    state[].scrollY += node["change-scroll-y"].num.int
     let minY = height - iw.height(ctx.tb)
     if minY < 0:
       state[].scrollY = state[].scrollY.clamp(minY, 0)
@@ -286,8 +292,9 @@ proc tick*(tb: var iw.TerminalBuffer) =
       "id": "main-page",
       # on the web, we want to use native scrolling,
       # so make this component expand to fit its content
-      "fit-content": platform == Web,
-      "scroll-x-change":
+      "grow-x": platform == Web,
+      "grow-y": platform == Web,
+      "change-scroll-x":
         case platform:
         of Tui, Gui:
           case key:
@@ -300,7 +307,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
         of Web:
           0
       ,
-      "scroll-y-change":
+      "change-scroll-y":
         if focusChange == 0:
           case platform:
           of Tui, Gui:
