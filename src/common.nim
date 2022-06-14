@@ -147,13 +147,17 @@ proc tick*(tb: var iw.TerminalBuffer) =
     else:
       0
   if focusChange != 0 and ctx.data.focusAreas[].len > 0:
-    # if the next focus area is out of view, don't change the focus
     let
       focusIndex = min(max(0, ctx.data.focusIndex + focusChange), ctx.data.focusAreas[].len-1)
       focusArea = ctx.data.focusAreas[focusIndex]
-    if iw.y(focusArea) < 0 or
-      iw.y(focusArea) + iw.height(focusArea) > iw.height(tb) or
-      ctx.data.focusIndex + focusChange < 0 or
+    # if the next focus area is out of view, don't change the focus
+    # (doesn't apply to web because scrolling works differently there)
+    if platform != Web and
+      (iw.y(focusArea) < 0 or
+       iw.y(focusArea) + iw.height(focusArea) > iw.height(tb)):
+      focusChange = 0
+    # if the next focus area doesn't exist, don't change the focus
+    elif ctx.data.focusIndex + focusChange < 0 or
       ctx.data.focusIndex + focusChange >= ctx.data.focusAreas[].len:
       focusChange = 0
   ctx.data.focusIndex += focusChange
