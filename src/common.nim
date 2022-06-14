@@ -276,6 +276,8 @@ proc tick*(tb: var iw.TerminalBuffer) =
   ctx.data.focusIndex += focusChange
   ctx.data.focusAreas[] = @[]
 
+  const scrollSpeed = 2
+
   ctx.tb = tb
   nimwave.render(
     ctx,
@@ -290,9 +292,9 @@ proc tick*(tb: var iw.TerminalBuffer) =
         of Tui, Gui:
           case key:
           of iw.Key.Left:
-            1
+            scrollSpeed
           of iw.Key.Right:
-            -1
+            -scrollSpeed
           else:
             0
         of Web:
@@ -304,9 +306,9 @@ proc tick*(tb: var iw.TerminalBuffer) =
           of Tui, Gui:
             case key:
             of iw.Key.Up:
-              1
+              scrollSpeed
             of iw.Key.Down:
-              -1
+              -scrollSpeed
             else:
               0
           of Web:
