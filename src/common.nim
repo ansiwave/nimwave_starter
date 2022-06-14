@@ -97,7 +97,7 @@ proc mountCounter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.Rend
           count += 1
         nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [text], "border": if focused: "double" else: "single"})
       ctx.components["count-btn"] = renderCountBtn
-      nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [{"type": "nimwave.vbox", "children": ["", $count]}, {"type": "count-btn"}]})
+      nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [{"type": "nimwave.vbox", "border": "none", "children": [$count]}, {"type": "count-btn"}]})
 
 type
   TextFieldState = object
