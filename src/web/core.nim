@@ -110,7 +110,27 @@ proc diff(tb: iw.TerminalBuffer, prevTb: iw.TerminalBuffer): seq[Action] =
       elif tb[x, y] != prevTb[x, y]:
         result.add(Action(kind: Update, ch: tb[x, y], x: x, y: y))
 
-var lastTb: iw.TerminalBuffer
+proc updateDom(tb: iw.TerminalBuffer, prevTb: iw.TerminalBuffer, selector: string): bool =
+  if prevTb.buf == nil:
+    let html = toHtml(tb)
+    emscripten.setInnerHtml(selector, html)
+    return true
+  elif prevTb != tb:
+    for action in diff(tb, prevTb):
+      case action.kind:
+      of Insert:
+        if not emscripten.insertHtml(selector & " .row" & $action.y, "beforeend", charToHtml(action.ch, (action.x, action.y))):
+          doAssert emscripten.insertHtml(selector, "beforeend", toLine("", action.y))
+          doAssert emscripten.insertHtml(selector &  ".row" & $action.y, "beforeend", charToHtml(action.ch, (action.x, action.y))):
+      of Update:
+        doAssert emscripten.insertHtml(selector & " .row" & $action.y & " .col" & $action.x, "afterend", charToHtml(action.ch, (action.x, action.y)))
+        doAssert emscripten.removeHtml(selector & " .row" & $action.y & " .col" & $action.x)
+      of Remove:
+        doAssert emscripten.removeHtml(selector & " .row" & $action.y & " .col" & $action.x)
+    return true
+  false
+
+var prevTb: iw.TerminalBuffer
 
 proc tick*() =
   var
@@ -119,21 +139,5 @@ proc tick*() =
     tb = iw.initTerminalBuffer(termWidth, termHeight)
 
   common.tick(tb)
-
-  if lastTb.buf == nil:
-    let html = toHtml(tb)
-    emscripten.setInnerHtml("#content", html)
-    lastTb = tb
-  elif lastTb != tb:
-    for action in diff(tb, lastTb):
-      case action.kind:
-      of Insert:
-        if not emscripten.insertHtml(".row" & $action.y, "beforeend", charToHtml(action.ch, (action.x, action.y))):
-          doAssert emscripten.insertHtml("#content", "beforeend", toLine("", action.y))
-          doAssert emscripten.insertHtml(".row" & $action.y, "beforeend", charToHtml(action.ch, (action.x, action.y))):
-      of Update:
-        doAssert emscripten.insertHtml(".row" & $action.y & " .col" & $action.x, "afterend", charToHtml(action.ch, (action.x, action.y)))
-        doAssert emscripten.removeHtml(".row" & $action.y & " .col" & $action.x)
-      of Remove:
-        doAssert emscripten.removeHtml(".row" & $action.y & " .col" & $action.x)
-    lastTb = tb
+  if updateDom(tb, prevTb, "#content"):
+    prevTb = tb
