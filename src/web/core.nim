@@ -63,7 +63,10 @@ proc charToHtml(ch: iw.TerminalChar, position: tuple[x: int, y: int] = (-1, -1))
         "onmousedown='mouseDown($1, $2)' onmouseup='mouseUp($1, $2)' onmousemove='mouseMove($1, $2)'".format(position.x, position.y)
       else:
         ""
-  return "<span style='$1 $2 $3' $4>".format(fg, bg, additionalStyles, mouseEvents) & $ch.ch & "</span>"
+  return "<span class='col" & $position.x & "' style='$1 $2 $3' $4>".format(fg, bg, additionalStyles, mouseEvents) & $ch.ch & "</span>"
+
+proc toLine(innerHtml: string, y: int): string =
+  "<div class='row" & $y & "' style='user-select: none;'>" & innerHtml & "</div>"
 
 proc toHtml(tb: iw.TerminalBuffer): string =
   let
@@ -74,10 +77,38 @@ proc toHtml(tb: iw.TerminalBuffer): string =
     var line = ""
     for x in 0 ..< termWidth:
       line &= charToHtml(tb[x, y], (x, y))
-    result &= "<div style='user-select: none;'>" & line & "</div>"
+    result &= toLine(line, y)
 
 proc init*() =
   common.init()
+
+type
+  ActionKind = enum
+    Insert, Update, Remove,
+  Action = object
+    case kind: ActionKind
+    of Insert, Update:
+      ch: iw.TerminalChar
+    of Remove:
+      discard
+    x: int
+    y: int
+
+proc getLineLen(tb: iw.TerminalBuffer, line: int): int =
+  if line > tb.buf[].chars.len - 1:
+    0
+  else:
+    tb.buf[].chars[line].len
+
+proc diff(tb: iw.TerminalBuffer, prevTb: iw.TerminalBuffer): seq[Action] =
+  for y in 0 ..< max(tb.buf[].chars.len, prevTb.buf[].chars.len):
+    for x in 0 ..< max(tb.getLineLen(y), prevTb.getLineLen(y)):
+      if y > prevTb.buf[].chars.len-1 or x > prevTb.buf[].chars[y].len-1:
+        result.add(Action(kind: Insert, ch: tb[x, y], x: x, y: y))
+      elif y > tb.buf[].chars.len-1 or x > tb.buf[].chars[y].len-1:
+        result.add(Action(kind: Remove, x: x, y: y))
+      elif tb[x, y] != prevTb[x, y]:
+        result.add(Action(kind: Update, ch: tb[x, y], x: x, y: y))
 
 var lastTb: iw.TerminalBuffer
 
@@ -89,7 +120,20 @@ proc tick*() =
 
   common.tick(tb)
 
-  if lastTb != tb:
+  if lastTb.buf == nil:
     let html = toHtml(tb)
     emscripten.setInnerHtml("#content", html)
+    lastTb = tb
+  elif lastTb != tb:
+    for action in diff(tb, lastTb):
+      case action.kind:
+      of Insert:
+        if not emscripten.insertHtml(".row" & $action.y, "beforeend", charToHtml(action.ch, (action.x, action.y))):
+          doAssert emscripten.insertHtml("#content", "beforeend", toLine("", action.y))
+          doAssert emscripten.insertHtml(".row" & $action.y, "beforeend", charToHtml(action.ch, (action.x, action.y))):
+      of Update:
+        doAssert emscripten.insertHtml(".row" & $action.y & " .col" & $action.x, "afterend", charToHtml(action.ch, (action.x, action.y)))
+        doAssert emscripten.removeHtml(".row" & $action.y & " .col" & $action.x)
+      of Remove:
+        doAssert emscripten.removeHtml(".row" & $action.y & " .col" & $action.x)
     lastTb = tb
