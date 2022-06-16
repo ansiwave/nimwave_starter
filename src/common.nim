@@ -2,6 +2,7 @@ from illwave as iw import `[]`, `[]=`, `==`
 from nimwave import nil
 import unicode, json, tables, deques
 from strutils import nil
+from sequtils import nil
 
 type
   Platform* = enum
@@ -14,8 +15,8 @@ var
   platform*: Platform
   mouse: iw.MouseInfo
   mouseQueue: Deque[iw.MouseInfo]
-  rune: Rune
-  runeQueue: Deque[Rune]
+  chars: string
+  charQueue: Deque[Rune]
   key: iw.Key
   keyQueue: Deque[iw.Key]
 
@@ -29,8 +30,8 @@ proc onMouse*(m: iw.MouseInfo) =
   else:
     mouseQueue.addLast(m)
 
-proc onRune*(r: Rune) =
-  runeQueue.addLast(r)
+proc onChar*(r: Rune) =
+  charQueue.addLast(r)
 
 proc onKey*(k: iw.Key) =
   keyQueue.addLast(k)
@@ -73,7 +74,7 @@ proc mountTemperatureText(ctx: var nimwave.Context[State], node: JsonNode, state
               "type": "text",
               "edit": {
                 "keycode": key.ord,
-                "chars": if rune != Rune(0): $rune else: "",
+                "chars": chars,
               },
             }
           else:
@@ -134,7 +135,9 @@ ctx.components["lyrics"] = renderLyrics
 
 proc tick*(tb: var iw.TerminalBuffer) =
   mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
-  rune = if runeQueue.len > 0: runeQueue.popFirst else: Rune(0)
+  chars = ""
+  while charQueue.len > 0:
+    chars &= charQueue.popFirst
   key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
 
   # change focus via mouse click

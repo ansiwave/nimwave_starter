@@ -31,7 +31,7 @@ proc tick() =
   if key == iw.Key.Mouse:
     common.onMouse(mouseInfo)
   elif key in {iw.Key.Space .. iw.Key.Tilde}:
-    common.onRune(cast[Rune](key.ord))
+    common.onChar(cast[Rune](key.ord))
   elif key != iw.Key.None:
     common.onKey(key)
   var tb = iw.initTerminalBuffer(terminal.terminalWidth(), terminal.terminalHeight())

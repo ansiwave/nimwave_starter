@@ -14,7 +14,7 @@ proc onKeyRelease*(key: iw.Key) =
   discard
 
 proc onChar*(codepoint: uint32) =
-  common.onRune(cast[Rune](codepoint))
+  common.onChar(cast[Rune](codepoint))
 
 proc onMouseDown*(x: int, y: int) {.exportc.} =
   var info: iw.MouseInfo

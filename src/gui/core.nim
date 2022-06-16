@@ -50,7 +50,7 @@ proc onKeyRelease*(key: iw.Key) =
   discard
 
 proc onChar*(codepoint: uint32) =
-  common.onRune(cast[Rune](codepoint))
+  common.onChar(cast[Rune](codepoint))
 
 proc onMouseClick*(button: iw.MouseButton, action: iw.MouseButtonAction, xpos: float, ypos: float) =
   var info: iw.MouseInfo
