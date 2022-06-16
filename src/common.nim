@@ -70,16 +70,15 @@ proc mountTemperatureText(ctx: var nimwave.Context[State], node: JsonNode, state
         "type": "nimwave.hbox",
         "border": if focused: "double" else: "single",
         "children": [
-          if focused:
-            %* {
-              "type": "text",
-              "edit": {
-                "keycode": key.ord,
-                "chars": chars,
-              },
-            }
-          else:
-            %* {"type": "text"}
+          {
+            "type": "text",
+            "edit":
+              if focused:
+                %* {"keycode": key.ord, "chars": chars}
+              else:
+                %* {}
+            ,
+          }
         ]
       })
 
