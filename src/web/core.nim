@@ -3,7 +3,6 @@ from ../common import nil
 import unicode
 from nimwave/web import nil
 from nimwave/web/emscripten import nil
-from nimwave/tui/termtools/runewidth import nil
 from strutils import format
 
 common.platform = common.Web
@@ -44,91 +43,15 @@ const
   padding = 0.81
   fontHeight = 20
   fontWidth = (fontHeight / 2) + padding
-
-proc charToHtml(ch: iw.TerminalChar, position: tuple[x: int, y: int] = (-1, -1)): string =
-  if cast[uint32](ch.ch) == 0:
-    return ""
-  let
-    fg = web.fgColorToString(ch)
-    bg = web.bgColorToString(ch)
-    additionalStyles =
-      if runewidth.runeWidth(ch.ch) == 2:
-        # add some padding because double width characters are a little bit narrower
-        # than two normal characters due to font differences
-        "display: inline-block; max-width: $1px; padding-left: $2px; padding-right: $2px;".format(fontHeight, padding)
-      else:
-        ""
-    mouseEvents =
-      if position != (-1, -1):
-        "onmousedown='mouseDown($1, $2)' onmouseup='mouseUp($1, $2)' onmousemove='mouseMove($1, $2)'".format(position.x, position.y)
-      else:
-        ""
-  return "<span class='col" & $position.x & "' style='$1 $2 $3' $4>".format(fg, bg, additionalStyles, mouseEvents) & $ch.ch & "</span>"
-
-proc toLine(innerHtml: string, y: int): string =
-  "<div class='row" & $y & "' style='user-select: none;'>" & innerHtml & "</div>"
-
-proc toHtml(tb: iw.TerminalBuffer): string =
-  let
-    termWidth = iw.width(tb)
-    termHeight = iw.height(tb)
-
-  for y in 0 ..< termHeight:
-    var line = ""
-    for x in 0 ..< termWidth:
-      line &= charToHtml(tb[x, y], (x, y))
-    result &= toLine(line, y)
+  options = web.Options(
+    normalWidthStyle: "",
+    # add some padding because double width characters are a little bit narrower
+    # than two normal characters due to font differences
+    doubleWidthStyle: "display: inline-block; max-width: $1px; padding-left: $2px; padding-right: $2px;".format(fontHeight, padding),
+  )
 
 proc init*() =
   common.init()
-
-type
-  ActionKind = enum
-    Insert, Update, Remove,
-  Action = object
-    case kind: ActionKind
-    of Insert, Update:
-      ch: iw.TerminalChar
-    of Remove:
-      discard
-    x: int
-    y: int
-
-proc getLineLen(tb: iw.TerminalBuffer, line: int): int =
-  if line > tb.buf[].chars.len - 1:
-    0
-  else:
-    tb.buf[].chars[line].len
-
-proc diff(tb: iw.TerminalBuffer, prevTb: iw.TerminalBuffer): seq[Action] =
-  for y in 0 ..< max(tb.buf[].chars.len, prevTb.buf[].chars.len):
-    for x in 0 ..< max(tb.getLineLen(y), prevTb.getLineLen(y)):
-      if y > prevTb.buf[].chars.len-1 or x > prevTb.buf[].chars[y].len-1:
-        result.add(Action(kind: Insert, ch: tb[x, y], x: x, y: y))
-      elif y > tb.buf[].chars.len-1 or x > tb.buf[].chars[y].len-1:
-        result.add(Action(kind: Remove, x: x, y: y))
-      elif tb[x, y] != prevTb[x, y]:
-        result.add(Action(kind: Update, ch: tb[x, y], x: x, y: y))
-
-proc updateDom(tb: iw.TerminalBuffer, prevTb: iw.TerminalBuffer, selector: string): bool =
-  if prevTb.buf == nil:
-    let html = toHtml(tb)
-    emscripten.setInnerHtml(selector, html)
-    return true
-  elif prevTb != tb:
-    for action in diff(tb, prevTb):
-      case action.kind:
-      of Insert:
-        if not emscripten.insertHtml(selector & " .row" & $action.y, "beforeend", charToHtml(action.ch, (action.x, action.y))):
-          doAssert emscripten.insertHtml(selector, "beforeend", toLine("", action.y))
-          doAssert emscripten.insertHtml(selector &  ".row" & $action.y, "beforeend", charToHtml(action.ch, (action.x, action.y))):
-      of Update:
-        doAssert emscripten.insertHtml(selector & " .row" & $action.y & " .col" & $action.x, "afterend", charToHtml(action.ch, (action.x, action.y)))
-        doAssert emscripten.removeHtml(selector & " .row" & $action.y & " .col" & $action.x)
-      of Remove:
-        doAssert emscripten.removeHtml(selector & " .row" & $action.y & " .col" & $action.x)
-    return true
-  false
 
 var prevTb: iw.TerminalBuffer
 
@@ -139,5 +62,5 @@ proc tick*() =
     tb = iw.initTerminalBuffer(termWidth, termHeight)
 
   common.tick(tb)
-  if updateDom(tb, prevTb, "#content"):
-    prevTb = tb
+  web.display(tb, prevTb, "#content", options)
+  prevTb = tb
