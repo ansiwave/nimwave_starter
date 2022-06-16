@@ -21,6 +21,7 @@ var
   keyQueue: Deque[iw.Key]
 
 proc onMouse*(m: iw.MouseInfo) =
+  mouseQueue.addLast(m)
   # treat scrolling up/down the same as arrow up/down
   case m.scrollDir:
   of iw.ScrollDirection.sdUp:
@@ -28,7 +29,7 @@ proc onMouse*(m: iw.MouseInfo) =
   of iw.ScrollDirection.sdDown:
     keyQueue.addLast(iw.Key.Down)
   else:
-    mouseQueue.addLast(m)
+    discard
 
 proc onChar*(r: Rune) =
   charQueue.addLast(r)
