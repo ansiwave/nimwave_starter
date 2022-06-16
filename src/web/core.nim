@@ -48,6 +48,9 @@ const
     # add some padding because double width characters are a little bit narrower
     # than two normal characters due to font differences
     doubleWidthStyle: "display: inline-block; max-width: $1px; padding-left: $2px; padding-right: $2px;".format(fontHeight, padding),
+    mouseDownFn: "mouseDown",
+    mouseUpFn: "mouseUp",
+    mouseMoveFn: "mouseMove",
   )
 
 proc init*() =
