@@ -2,7 +2,6 @@ from illwave as iw import `[]`, `[]=`, `==`
 from nimwave import nil
 import unicode, json, tables, deques
 from strutils import nil
-from sequtils import nil
 
 type
   Platform* = enum
