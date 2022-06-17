@@ -28,7 +28,7 @@ const
   monoFontRaw = staticRead("../../web/3270-Regular.ttf")
   charCount = gui.codepointToGlyph.len
   blockCharIndex = gui.codepointToGlyph["█".toRunes[0].int32]
-  bgColor = glm.vec4(0f/255f, 16f/255f, 64f/255f, 0.95f)
+  bgColor = glm.vec4(0f/255f, 54f/255f, 74f/255f, 0.95f)
   textColor = glm.vec4(230f/255f, 235f/255f, 1f, 1f)
 
 let
