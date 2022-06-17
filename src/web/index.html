@@ -58,6 +58,11 @@ html, body {
       function mouseMove(x, y) {
         Module.ccall("onMouseMove", null, ['number', 'number'], [x, y]);
       }
+      window.onkeydown = function(e) {
+        if (e.keyCode == 38 || e.keyCode == 40) {
+          return false;
+        }
+      };
       var Module = {
         preRun: [],
         postRun: [],

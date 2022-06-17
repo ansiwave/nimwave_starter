@@ -157,19 +157,15 @@ proc tick*(tb: var iw.TerminalBuffer) =
     else:
       0
   if focusChange != 0 and ctx.data.focusAreas[].len > 0:
-    let
-      focusIndex = min(max(0, ctx.data.focusIndex + focusChange), ctx.data.focusAreas[].len-1)
-      focusArea = ctx.data.focusAreas[focusIndex]
-    # if the next focus area is out of view, don't change the focus
-    # (doesn't apply to web because scrolling works differently there)
-    if platform != Web and
-      (iw.y(focusArea) < 0 or
-       iw.y(focusArea) + iw.height(focusArea) > iw.height(tb)):
-      focusChange = 0
     # if the next focus area doesn't exist, don't change the focus
-    elif ctx.data.focusIndex + focusChange < 0 or
+    if ctx.data.focusIndex + focusChange < 0 or
       ctx.data.focusIndex + focusChange >= ctx.data.focusAreas[].len:
       focusChange = 0
+    # if the next focus area is out of view, don't change the focus
+    else:
+      let focusArea = ctx.data.focusAreas[ctx.data.focusIndex + focusChange]
+      if iw.y(focusArea) < 0 or iw.y(focusArea) > iw.height(tb):
+        focusChange = 0
   ctx.data.focusIndex += focusChange
   ctx.data.focusAreas[] = @[]
 
@@ -186,30 +182,22 @@ proc tick*(tb: var iw.TerminalBuffer) =
       "grow-x": platform == Web,
       "grow-y": platform == Web,
       "change-scroll-x":
-        case platform:
-        of Tui, Gui:
-          case key:
-          of iw.Key.Left:
-            scrollSpeed
-          of iw.Key.Right:
-            -scrollSpeed
-          else:
-            0
-        of Web:
+        case key:
+        of iw.Key.Left:
+          scrollSpeed
+        of iw.Key.Right:
+          -scrollSpeed
+        else:
           0
       ,
       "change-scroll-y":
         if focusChange == 0:
-          case platform:
-          of Tui, Gui:
-            case key:
-            of iw.Key.Up:
-              scrollSpeed
-            of iw.Key.Down:
-              -scrollSpeed
-            else:
-              0
-          of Web:
+          case key:
+          of iw.Key.Up:
+            scrollSpeed
+          of iw.Key.Down:
+            -scrollSpeed
+          else:
             0
         else:
           0
