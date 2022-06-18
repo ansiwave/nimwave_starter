@@ -181,15 +181,6 @@ proc tick*(tb: var iw.TerminalBuffer) =
       # so make this component grow to fit its content
       "grow-x": platform == Web,
       "grow-y": platform == Web,
-      "change-scroll-x":
-        case key:
-        of iw.Key.Left:
-          scrollSpeed
-        of iw.Key.Right:
-          -scrollSpeed
-        else:
-          0
-      ,
       "change-scroll-y":
         if focusChange == 0:
           case key:
