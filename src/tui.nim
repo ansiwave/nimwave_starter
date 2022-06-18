@@ -42,7 +42,11 @@ proc tick() =
 proc main() =
   init()
   while true:
-    tick()
+    try:
+      tick()
+    except Exception as ex:
+      deinit()
+      raise ex
     os.sleep(5)
 
 when isMainModule:
