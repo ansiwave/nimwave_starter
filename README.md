@@ -1,3 +1,5 @@
+This is a sample NIMWAVE program. The main code is located in `src/common.nim`.
+
 ```
 # develop for the terminal
 nimble run tui
