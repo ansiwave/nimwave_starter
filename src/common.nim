@@ -54,7 +54,7 @@ proc mountCounter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.Rend
         ctx = nimwave.slice(ctx, 0, 0, text.runeLen+2, iw.height(ctx.tb))
         if (mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse)) or (focused and key == iw.Key.Enter):
           count += 1
-        nimwave.render(ctx, %* {"type": "nimwave.hbox", "border": "single", "children": [text], "border": if focused: "double" else: "single"})
+        nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [text], "border": if focused: "double" else: "single"})
       ctx.components["count-btn"] = renderCountBtn
       nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [{"type": "nimwave.vbox", "border": "none", "children": [$count]}, {"type": "count-btn"}]})
 
