@@ -181,6 +181,19 @@ proc tick*(tb: var iw.TerminalBuffer) =
       # so make this component grow to fit its content
       "grow-x": platform == Web,
       "grow-y": platform == Web,
+      "change-scroll-x":
+        # don't scroll x if text fields are focused
+        if ctx.data.focusIndex notin {1, 2}:
+          case key:
+          of iw.Key.Left:
+            scrollSpeed
+          of iw.Key.Right:
+            -scrollSpeed
+          else:
+            0
+        else:
+          0
+      ,
       "change-scroll-y":
         if focusChange == 0:
           case key:
