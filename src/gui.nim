@@ -99,7 +99,7 @@ proc main*() =
     core.game.totalTime = ts
     core.tick(core.game)
     window.swapBuffers()
-    glfwPollEvents()
+    glfwWaitEvents()
 
   window.destroyWindow()
   glfwTerminate()
