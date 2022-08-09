@@ -52,6 +52,10 @@ proc onKeyRelease*(key: iw.Key) =
 proc onChar*(codepoint: uint32) =
   common.onChar(cast[Rune](codepoint))
 
+var
+  lastButton: iw.MouseButton
+  lastAction: iw.MouseButtonAction
+
 proc onMouseClick*(button: iw.MouseButton, action: iw.MouseButtonAction, xpos: float, ypos: float) =
   var info: iw.MouseInfo
   info.button = button
@@ -59,9 +63,13 @@ proc onMouseClick*(button: iw.MouseButton, action: iw.MouseButtonAction, xpos: f
   info.x = int(xpos / fontWidth() - 0.25)
   info.y = int(ypos / fontHeight() - 0.25)
   common.onMouse(info)
+  lastButton = button
+  lastAction = action
 
 proc onMouseMove*(xpos: float, ypos: float) =
   var info: iw.MouseInfo
+  info.button = lastButton
+  info.action = lastAction
   info.x = int(xpos / fontWidth() - 0.25)
   info.y = int(ypos / fontHeight() - 0.25)
   info.move = true
