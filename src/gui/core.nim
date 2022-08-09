@@ -89,6 +89,8 @@ proc init*(game: var Game) =
   baseEntity = text.initTextEntity(monoFont)
   textEntity = compile(game, gui.initInstancedEntity(baseEntity, monoFont))
 
+  common.init()
+
 proc tick*(game: Game) =
   glClearColor(bgColor.arr[0], bgColor.arr[1], bgColor.arr[2], bgColor.arr[3])
   glClear(GL_COLOR_BUFFER_BIT)
