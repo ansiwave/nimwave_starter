@@ -24,5 +24,6 @@ when defined(emscripten):
 
   --define:useMalloc
   --opt:size
+  --threads:off
 
   switch("passL", "-o web/index.html --shell-file src/web/index.html -s EXPORTED_FUNCTIONS=\"['_main', '_onMouseDown', '_onMouseMove', '_onMouseUp']\" -s EXPORTED_RUNTIME_METHODS=\"['ccall']\"")
