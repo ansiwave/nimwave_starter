@@ -2,6 +2,7 @@ from illwave as iw import `[]`, `[]=`, `==`
 from nimwave as nw import nil
 import unicode, json, tables, deques
 from strutils import nil
+from sequtils import nil
 
 type
   Platform* = enum
@@ -14,11 +15,8 @@ include nimwave/prelude
 
 var
   platform*: Platform
-  mouse: iw.MouseInfo
   mouseQueue: Deque[iw.MouseInfo]
-  chars: string
   charQueue: Deque[Rune]
-  key: iw.Key
   keyQueue: Deque[iw.Key]
 
 proc onMouse*(m: iw.MouseInfo) =
@@ -45,86 +43,22 @@ proc addFocusArea(ctx: var nw.Context[State]): bool =
   result = ctx.data.focusIndex == ctx.data.focusAreas[].len
   ctx.data.focusAreas[].add(ctx.tb)
 
-#[
+type
+  TempConverter = ref object of nimwave.Component
+    key: iw.Key
+    chars: seq[Rune]
 
-proc mountCounter(ctx: var nw.Context[State], node: JsonNode): nw.RenderProc[State] =
-  var count = 0
-  return
-    proc (ctx: var nw.Context[State], node: JsonNode) =
-      ctx = nw.slice(ctx, 0, 0, 15, 3)
-      let focused = addFocusArea(ctx)
-      proc renderCountBtn(ctx: var nw.Context[State], node: JsonNode) =
-        const text = "Count"
-        ctx = nw.slice(ctx, 0, 0, text.runeLen+2, iw.height(ctx.tb))
-        if (mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse)) or (focused and key == iw.Key.Enter):
-          count += 1
-        nw.render(ctx, %* {"type": "nw.hbox", "children": [text], "border": if focused: "double" else: "single"})
-      ctx.components["count-btn"] = renderCountBtn
-      nw.render(ctx, %* {"type": "nw.hbox", "children": [{"type": "nw.vbox", "border": "none", "children": [$count]}, {"type": "count-btn"}]})
-
-proc mountTemperatureText(ctx: var nw.Context[State], node: JsonNode, state: ref nw.TextState): nw.RenderProc[State] =
-  let renderText = nw.mountText(ctx, node, state)
-  return
-    proc (ctx: var nw.Context[State], node: JsonNode) =
-      ctx = nw.slice(ctx, 0, 0, 10, 3)
-      let focused = addFocusArea(ctx)
-      ctx.components["text"] = renderText
-      nw.render(ctx, %* {
-        "type": "nw.hbox",
-        "border": if focused: "double" else: "single",
-        "children": [
-          {
-            "type": "text",
-            "edit":
-              if focused:
-                %* {"keycode": key.ord, "chars": chars}
-              else:
-                %* {}
-            ,
-          }
-        ]
-      })
-
-proc mountTemperatureConverter(ctx: var nw.Context[State], node: JsonNode): nw.RenderProc[State] =
-  var celsiusState = new nw.TextState
-  celsiusState.text = "5.0"
-  let renderCelsius = mountTemperatureText(ctx, node, celsiusState)
-  var fahrenState = new nw.TextState
-  fahrenState.text = "41.0"
-  let renderFahren = mountTemperatureText(ctx, node, fahrenState)
-  return
-    proc (ctx: var nw.Context[State], node: JsonNode) =
-      ctx = nw.slice(ctx, 0, 0, iw.width(ctx.tb), 3)
-      ctx.components["celsius"] = renderCelsius
-      ctx.components["fahrenheit"] = renderFahren
-      let
-        oldCelsius = celsiusState[].text
-        oldFahren = fahrenState[].text
-      nw.render(ctx, %* {
-        "type": "nw.hbox",
-        "children": [
-          {"type": "celsius", "id": "celsius"},
-          {"type": "nw.hbox", "border": "none", "children": ["Celsius ="]},
-          {"type": "fahrenheit", "id": "fahrenheit"},
-          {"type": "nw.hbox", "border": "none", "children": ["Fahrenheit"]},
-        ]
-      })
-      let
-        newCelsius = celsiusState[].text
-        newFahren = fahrenState[].text
-      if oldCelsius != newCelsius:
-        try:
-          let c = strutils.parseFloat(newCelsius)
-          fahrenState[].text = $(c * (9 / 5) + 32f)
-        except ValueError:
-          fahrenState[].text = ""
-      elif oldFahren != newFahren:
-        try:
-          let f = strutils.parseFloat(newFahren)
-          celsiusState[].text = $((f - 32) * (5 / 9))
-        except ValueError:
-          celsiusState[].text = ""
-]#
+method render*(node: TempConverter, ctx: var nw.Context[State]) =
+  procCall render(nw.Component(node), ctx)
+  ctx = nimwave.slice(ctx, 0, 0, 15, 3)
+  let focused = addFocusArea(ctx)
+  render(Box(
+    direction: Direction.Horizontal,
+    border: if focused: Border.Double else: Border.Single,
+    children: nw.all(
+      Text(id: "edit", kind: TextKind.Edit, enabled: focused, key: node.key, chars: node.chars),
+    ),
+  ), ctx)
 
 type
   Lyrics = ref object of nw.Component
@@ -135,7 +69,7 @@ method render*(node: Lyrics, ctx: var nw.Context[State]) =
   let focused = addFocusArea(ctx)
   var lines: seq[nw.Component]
   for line in rollingStone:
-    lines.add(Text(content: line))
+    lines.add(Text(text: line))
   let box = Box(
     direction: Direction.Vertical,
     border: if focused: Border.Double else: Border.Single,
@@ -147,11 +81,13 @@ var ctx = nw.initContext[State]()
 new ctx.data.focusAreas
 
 proc tick*(tb: var iw.TerminalBuffer) =
-  mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
-  chars = ""
-  while charQueue.len > 0:
-    chars &= charQueue.popFirst
-  key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
+  let
+    mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
+    chars = block:
+      let s = sequtils.toSeq(charQueue)
+      charQueue.clear
+      s
+    key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
 
   # change focus via mouse click
   if mouse.button == iw.MouseButton.mbLeft and mouse.action == iw.MouseButtonAction.mbaPressed:
@@ -195,6 +131,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
     child: Box(
       direction: Direction.Vertical,
       children: nw.all(
+        TempConverter(key: key, chars: chars),
         Lyrics(),
       )
     ),
