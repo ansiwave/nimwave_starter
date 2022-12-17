@@ -44,19 +44,19 @@ proc addFocusArea(ctx: var nw.Context[State]): bool =
   ctx.data.focusAreas[].add(ctx.tb)
 
 type
-  TempConverter = ref object of nimwave.Component
+  TempConverter = ref object of nw.Component
     key: iw.Key
     chars: seq[Rune]
 
 method render*(node: TempConverter, ctx: var nw.Context[State]) =
   procCall render(nw.Component(node), ctx)
-  ctx = nimwave.slice(ctx, 0, 0, 15, 3)
+  ctx = nw.slice(ctx, 0, 0, 15, 3)
   let focused = addFocusArea(ctx)
-  render(Box(
-    direction: Direction.Horizontal,
-    border: if focused: Border.Double else: Border.Single,
+  render(nw.Box(
+    direction: nw.Direction.Horizontal,
+    border: if focused: nw.Border.Double else: nw.Border.Single,
     children: nw.all(
-      Text(id: "edit", kind: TextKind.Edit, enabled: focused, key: node.key, chars: node.chars),
+      nw.Text(id: "edit", kind: nw.TextKind.Edit, enabled: focused, key: node.key, chars: node.chars),
     ),
   ), ctx)
 
@@ -69,10 +69,10 @@ method render*(node: Lyrics, ctx: var nw.Context[State]) =
   let focused = addFocusArea(ctx)
   var lines: seq[nw.Component]
   for line in rollingStone:
-    lines.add(Text(text: line))
-  let box = Box(
-    direction: Direction.Vertical,
-    border: if focused: Border.Double else: Border.Single,
+    lines.add(nw.Text(text: line))
+  let box = nw.Box(
+    direction: nw.Direction.Vertical,
+    border: if focused: nw.Border.Double else: nw.Border.Single,
     children: lines,
   )
   render(box, ctx)
@@ -122,14 +122,14 @@ proc tick*(tb: var iw.TerminalBuffer) =
   const scrollSpeed = 2
 
   ctx.tb = tb
-  let root = Scroll(
+  let root = nw.Scroll(
     id: "main-page",
     # on the web, we want to use native scrolling,
     # so make this component grow to fit its content
     growX: platform == Web,
     growY: platform == Web,
-    child: Box(
-      direction: Direction.Vertical,
+    child: nw.Box(
+      direction: nw.Direction.Vertical,
       children: nw.all(
         TempConverter(key: key, chars: chars),
         Lyrics(),
