@@ -51,7 +51,6 @@ type
     action: proc ()
 
 method render*(node: Button, ctx: var nw.Context[State]) =
-  procCall render(nw.Node(node), ctx)
   ctx = nimwave.slice(ctx, 0, 0, node.text.runeLen+2, iw.height(ctx.tb))
   let focused = addFocusArea(ctx)
   if (node.mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, node.mouse)) or
@@ -72,7 +71,6 @@ type
     count: int
 
 method render*(node: Counter, ctx: var nw.Context[State]) =
-  procCall render(nw.Node(node), ctx)
   let mnode = getMounted(node, ctx)
   ctx = nw.slice(ctx, 0, 0, 15, 3)
   proc incCount() =
@@ -93,19 +91,75 @@ method render*(node: Counter, ctx: var nw.Context[State]) =
   ), ctx)
 
 type
+  TextField = ref object of nw.Node
+    key: iw.Key
+    chars: seq[Rune]
+    action: proc (text: nw.Text)
+    innerText: nw.Text
+    initialText: string
+
+method render*(node: TextField, ctx: var nw.Context[State]) =
+  ctx = nw.slice(ctx, 0, 0, 10, 3)
+  let focused = addFocusArea(ctx)
+  node.innerText = getMounted(nw.Text(id: node.id & "/text", kind: nw.TextKind.Edit, text: node.initialText), ctx)
+  node.innerText.enabled = focused
+  node.innerText.key = node.key
+  node.innerText.chars = node.chars
+  render(nw.Box(
+    direction: nw.Direction.Horizontal,
+    border: if focused: nw.Border.Double else: nw.Border.Single,
+    children: nw.all(node.innerText),
+  ), ctx)
+  if focused and (node.key != iw.Key.None or node.chars.len > 0):
+    node.action(node.innerText)
+
+type
   TempConverter = ref object of nw.Node
     key: iw.Key
     chars: seq[Rune]
 
 method render*(node: TempConverter, ctx: var nw.Context[State]) =
-  procCall render(nw.Node(node), ctx)
-  ctx = nw.slice(ctx, 0, 0, 10, 3)
-  let focused = addFocusArea(ctx)
+  ctx = nimwave.slice(ctx, 0, 0, iw.width(ctx.tb), 3)
+  let
+    celsius = getMounted(TextField(id: node.id & "/celsius", initialText: "5.0"), ctx)
+    fahren = getMounted(TextField(id: node.id & "/fahrenheit", initialText: "41.0"), ctx)
+  celsius.key = node.key
+  celsius.chars = node.chars
+  celsius.action =
+    proc (text: nw.Text) =
+      try:
+        let c = strutils.parseFloat(text.text)
+        fahren.innerText.text = $(c * (9 / 5) + 32f)
+      except ValueError:
+        fahren.innerText.text = ""
+  fahren.key = node.key
+  fahren.chars = node.chars
+  fahren.action =
+    proc (text: nw.Text) =
+      try:
+        let f = strutils.parseFloat(text.text)
+        celsius.innerText.text = $((f - 32) * (5 / 9))
+      except ValueError:
+        celsius.innerText.text = ""
   render(nw.Box(
     direction: nw.Direction.Horizontal,
-    border: if focused: nw.Border.Double else: nw.Border.Single,
     children: nw.all(
-      nw.Text(id: "edit", kind: nw.TextKind.Edit, enabled: focused, key: node.key, chars: node.chars),
+      celsius,
+      nw.Box(
+        direction: nw.Direction.Horizontal,
+        border: nw.Border.Hidden,
+        children: nw.all(
+          nw.Text(text: "Celsius = "),
+        ),
+      ),
+      fahren,
+      nw.Box(
+        direction: nw.Direction.Horizontal,
+        border: nw.Border.Hidden,
+        children: nw.all(
+          nw.Text(text: "Fahrenheit"),
+        ),
+      ),
     ),
   ), ctx)
 
@@ -113,7 +167,6 @@ type
   Lyrics = ref object of nw.Node
 
 method render*(node: Lyrics, ctx: var nw.Context[State]) =
-  procCall render(nw.Node(node), ctx)
   const rollingStone = strutils.splitLines(staticRead("rollingstone.txt"))
   let focused = addFocusArea(ctx)
   var lines: seq[nw.Node]
@@ -181,7 +234,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
       direction: nw.Direction.Vertical,
       children: nw.all(
         Counter(id: "counter", key: key, mouse: mouse),
-        TempConverter(key: key, chars: chars),
+        TempConverter(id: "converter", key: key, chars: chars),
         Lyrics(),
       )
     ),
