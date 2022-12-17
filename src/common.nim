@@ -44,14 +44,14 @@ proc addFocusArea(ctx: var nw.Context[State]): bool =
   ctx.data.focusAreas[].add(ctx.tb)
 
 type
-  Button = ref object of nw.Component
+  Button = ref object of nw.Node
     text: string
     key: iw.Key
     mouse: iw.MouseInfo
     action: proc ()
 
 method render*(node: Button, ctx: var nw.Context[State]) =
-  procCall render(nw.Component(node), ctx)
+  procCall render(nw.Node(node), ctx)
   ctx = nimwave.slice(ctx, 0, 0, node.text.runeLen+2, iw.height(ctx.tb))
   let focused = addFocusArea(ctx)
   if (node.mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, node.mouse)) or
@@ -66,13 +66,13 @@ method render*(node: Button, ctx: var nw.Context[State]) =
   ), ctx)
 
 type
-  Counter = ref object of nw.Component
+  Counter = ref object of nw.Node
     key: iw.Key
     mouse: iw.MouseInfo
     count: int
 
 method render*(node: Counter, ctx: var nw.Context[State]) =
-  procCall render(nw.Component(node), ctx)
+  procCall render(nw.Node(node), ctx)
   let mnode = getMounted(node, ctx)
   ctx = nw.slice(ctx, 0, 0, 15, 3)
   proc incCount() =
@@ -93,12 +93,12 @@ method render*(node: Counter, ctx: var nw.Context[State]) =
   ), ctx)
 
 type
-  TempConverter = ref object of nw.Component
+  TempConverter = ref object of nw.Node
     key: iw.Key
     chars: seq[Rune]
 
 method render*(node: TempConverter, ctx: var nw.Context[State]) =
-  procCall render(nw.Component(node), ctx)
+  procCall render(nw.Node(node), ctx)
   ctx = nw.slice(ctx, 0, 0, 10, 3)
   let focused = addFocusArea(ctx)
   render(nw.Box(
@@ -110,13 +110,13 @@ method render*(node: TempConverter, ctx: var nw.Context[State]) =
   ), ctx)
 
 type
-  Lyrics = ref object of nw.Component
+  Lyrics = ref object of nw.Node
 
 method render*(node: Lyrics, ctx: var nw.Context[State]) =
-  procCall render(nw.Component(node), ctx)
+  procCall render(nw.Node(node), ctx)
   const rollingStone = strutils.splitLines(staticRead("rollingstone.txt"))
   let focused = addFocusArea(ctx)
-  var lines: seq[nw.Component]
+  var lines: seq[nw.Node]
   for line in rollingStone:
     lines.add(nw.Text(text: line))
   let box = nw.Box(
