@@ -1,5 +1,5 @@
 from illwave as iw import `[]`, `[]=`, `==`
-from nimwave import nil
+from nimwave as nw import nil
 import unicode, json, tables, deques
 from strutils import nil
 
@@ -9,6 +9,8 @@ type
   State = object
     focusIndex*: int
     focusAreas*: ref seq[iw.TerminalBuffer]
+
+include nimwave/prelude
 
 var
   platform*: Platform
@@ -39,34 +41,36 @@ proc onKey*(k: iw.Key) =
 proc init*() =
   discard
 
-proc addFocusArea(ctx: var nimwave.Context[State]): bool =
+proc addFocusArea(ctx: var nw.Context[State]): bool =
   result = ctx.data.focusIndex == ctx.data.focusAreas[].len
   ctx.data.focusAreas[].add(ctx.tb)
 
-proc mountCounter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc[State] =
+#[
+
+proc mountCounter(ctx: var nw.Context[State], node: JsonNode): nw.RenderProc[State] =
   var count = 0
   return
-    proc (ctx: var nimwave.Context[State], node: JsonNode) =
-      ctx = nimwave.slice(ctx, 0, 0, 15, 3)
+    proc (ctx: var nw.Context[State], node: JsonNode) =
+      ctx = nw.slice(ctx, 0, 0, 15, 3)
       let focused = addFocusArea(ctx)
-      proc renderCountBtn(ctx: var nimwave.Context[State], node: JsonNode) =
+      proc renderCountBtn(ctx: var nw.Context[State], node: JsonNode) =
         const text = "Count"
-        ctx = nimwave.slice(ctx, 0, 0, text.runeLen+2, iw.height(ctx.tb))
+        ctx = nw.slice(ctx, 0, 0, text.runeLen+2, iw.height(ctx.tb))
         if (mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, mouse)) or (focused and key == iw.Key.Enter):
           count += 1
-        nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [text], "border": if focused: "double" else: "single"})
+        nw.render(ctx, %* {"type": "nw.hbox", "children": [text], "border": if focused: "double" else: "single"})
       ctx.components["count-btn"] = renderCountBtn
-      nimwave.render(ctx, %* {"type": "nimwave.hbox", "children": [{"type": "nimwave.vbox", "border": "none", "children": [$count]}, {"type": "count-btn"}]})
+      nw.render(ctx, %* {"type": "nw.hbox", "children": [{"type": "nw.vbox", "border": "none", "children": [$count]}, {"type": "count-btn"}]})
 
-proc mountTemperatureText(ctx: var nimwave.Context[State], node: JsonNode, state: ref nimwave.TextState): nimwave.RenderProc[State] =
-  let renderText = nimwave.mountText(ctx, node, state)
+proc mountTemperatureText(ctx: var nw.Context[State], node: JsonNode, state: ref nw.TextState): nw.RenderProc[State] =
+  let renderText = nw.mountText(ctx, node, state)
   return
-    proc (ctx: var nimwave.Context[State], node: JsonNode) =
-      ctx = nimwave.slice(ctx, 0, 0, 10, 3)
+    proc (ctx: var nw.Context[State], node: JsonNode) =
+      ctx = nw.slice(ctx, 0, 0, 10, 3)
       let focused = addFocusArea(ctx)
       ctx.components["text"] = renderText
-      nimwave.render(ctx, %* {
-        "type": "nimwave.hbox",
+      nw.render(ctx, %* {
+        "type": "nw.hbox",
         "border": if focused: "double" else: "single",
         "children": [
           {
@@ -81,28 +85,28 @@ proc mountTemperatureText(ctx: var nimwave.Context[State], node: JsonNode, state
         ]
       })
 
-proc mountTemperatureConverter(ctx: var nimwave.Context[State], node: JsonNode): nimwave.RenderProc[State] =
-  var celsiusState = new nimwave.TextState
+proc mountTemperatureConverter(ctx: var nw.Context[State], node: JsonNode): nw.RenderProc[State] =
+  var celsiusState = new nw.TextState
   celsiusState.text = "5.0"
   let renderCelsius = mountTemperatureText(ctx, node, celsiusState)
-  var fahrenState = new nimwave.TextState
+  var fahrenState = new nw.TextState
   fahrenState.text = "41.0"
   let renderFahren = mountTemperatureText(ctx, node, fahrenState)
   return
-    proc (ctx: var nimwave.Context[State], node: JsonNode) =
-      ctx = nimwave.slice(ctx, 0, 0, iw.width(ctx.tb), 3)
+    proc (ctx: var nw.Context[State], node: JsonNode) =
+      ctx = nw.slice(ctx, 0, 0, iw.width(ctx.tb), 3)
       ctx.components["celsius"] = renderCelsius
       ctx.components["fahrenheit"] = renderFahren
       let
         oldCelsius = celsiusState[].text
         oldFahren = fahrenState[].text
-      nimwave.render(ctx, %* {
-        "type": "nimwave.hbox",
+      nw.render(ctx, %* {
+        "type": "nw.hbox",
         "children": [
           {"type": "celsius", "id": "celsius"},
-          {"type": "nimwave.hbox", "border": "none", "children": ["Celsius ="]},
+          {"type": "nw.hbox", "border": "none", "children": ["Celsius ="]},
           {"type": "fahrenheit", "id": "fahrenheit"},
-          {"type": "nimwave.hbox", "border": "none", "children": ["Fahrenheit"]},
+          {"type": "nw.hbox", "border": "none", "children": ["Fahrenheit"]},
         ]
       })
       let
@@ -120,17 +124,27 @@ proc mountTemperatureConverter(ctx: var nimwave.Context[State], node: JsonNode):
           celsiusState[].text = $((f - 32) * (5 / 9))
         except ValueError:
           celsiusState[].text = ""
+]#
 
-proc renderLyrics(ctx: var nimwave.Context[State], node: JsonNode) =
+type
+  Lyrics = ref object of nw.Component
+
+method render*(node: Lyrics, ctx: var nw.Context[State]) =
+  procCall render(nw.Component(node), ctx)
   const rollingStone = strutils.splitLines(staticRead("rollingstone.txt"))
   let focused = addFocusArea(ctx)
-  nimwave.render(ctx, %* {"type": "nimwave.vbox", "border": if focused: "double" else: "single", "children": rollingStone})
+  var lines: seq[nw.Component]
+  for line in rollingStone:
+    lines.add(Text(content: line))
+  let box = Box(
+    direction: Direction.Vertical,
+    border: if focused: Border.Double else: Border.Single,
+    children: lines,
+  )
+  render(box, ctx)
 
-var ctx = nimwave.initContext[State]()
+var ctx = nw.initContext[State]()
 new ctx.data.focusAreas
-ctx.statefulComponents["counter"] = mountCounter
-ctx.statefulComponents["temp-converter"] = mountTemperatureConverter
-ctx.components["lyrics"] = renderLyrics
 
 proc tick*(tb: var iw.TerminalBuffer) =
   mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
@@ -172,50 +186,42 @@ proc tick*(tb: var iw.TerminalBuffer) =
   const scrollSpeed = 2
 
   ctx.tb = tb
-  nimwave.render(
-    ctx,
-    %* {
-      "type": "nimwave.scroll",
-      "id": "main-page",
-      # on the web, we want to use native scrolling,
-      # so make this component grow to fit its content
-      "grow-x": platform == Web,
-      "grow-y": platform == Web,
-      "change-scroll-x":
-        # don't scroll x if text fields are focused
-        if ctx.data.focusIndex notin {1, 2}:
-          case key:
-          of iw.Key.Left:
-            scrollSpeed
-          of iw.Key.Right:
-            -scrollSpeed
-          else:
-            0
+  let root = Scroll(
+    id: "main-page",
+    # on the web, we want to use native scrolling,
+    # so make this component grow to fit its content
+    growX: platform == Web,
+    growY: platform == Web,
+    child: Box(
+      direction: Direction.Vertical,
+      children: nw.all(
+        Lyrics(),
+      )
+    ),
+    changeScrollX:
+      # don't scroll x if text fields are focused
+      if ctx.data.focusIndex notin {1, 2}:
+        case key:
+        of iw.Key.Left:
+          scrollSpeed
+        of iw.Key.Right:
+          -scrollSpeed
         else:
           0
-      ,
-      "change-scroll-y":
-        if focusChange == 0:
-          case key:
-          of iw.Key.Up:
-            scrollSpeed
-          of iw.Key.Down:
-            -scrollSpeed
-          else:
-            0
+      else:
+        0
+    ,
+    changeScrollY:
+      if focusChange == 0:
+        case key:
+        of iw.Key.Up:
+          scrollSpeed
+        of iw.Key.Down:
+          -scrollSpeed
         else:
           0
-      ,
-      "child":
-        {
-          "type": "nimwave.vbox",
-          "children": [
-            {"type": "counter", "id": "counter"},
-            {"type": "temp-converter", "id": "temp-converter"},
-            {"type": "lyrics"},
-          ]
-        }
-      ,
-    }
+      else:
+        0
   )
+  renderRoot(root, ctx)
 
