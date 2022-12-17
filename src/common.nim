@@ -44,13 +44,62 @@ proc addFocusArea(ctx: var nw.Context[State]): bool =
   ctx.data.focusAreas[].add(ctx.tb)
 
 type
+  Button = ref object of nw.Component
+    text: string
+    key: iw.Key
+    mouse: iw.MouseInfo
+    action: proc ()
+
+method render*(node: Button, ctx: var nw.Context[State]) =
+  procCall render(nw.Component(node), ctx)
+  ctx = nimwave.slice(ctx, 0, 0, node.text.runeLen+2, iw.height(ctx.tb))
+  let focused = addFocusArea(ctx)
+  if (node.mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, node.mouse)) or
+      (focused and node.key == iw.Key.Enter):
+    node.action()
+  render(nw.Box(
+    direction: nw.Direction.Horizontal,
+    border: if focused: nw.Border.Double else: nw.Border.Single,
+    children: nw.all(
+      nw.Text(text: node.text),
+    ),
+  ), ctx)
+
+type
+  Counter = ref object of nw.Component
+    key: iw.Key
+    mouse: iw.MouseInfo
+    count: int
+
+method render*(node: Counter, ctx: var nw.Context[State]) =
+  procCall render(nw.Component(node), ctx)
+  let mnode = getMounted(node, ctx)
+  ctx = nw.slice(ctx, 0, 0, 15, 3)
+  proc incCount() =
+    mnode.count += 1
+  render(nw.Box(
+    direction: nw.Direction.Horizontal,
+    border: nw.Border.None,
+    children: nw.all(
+      nw.Box(
+        direction: nw.Direction.Horizontal,
+        border: nw.Border.Hidden,
+        children: nw.all(
+          nw.Text(text: $mnode.count),
+        ),
+      ),
+      Button(text: "Count", key: node.key, mouse: node.mouse, action: incCount),
+    ),
+  ), ctx)
+
+type
   TempConverter = ref object of nw.Component
     key: iw.Key
     chars: seq[Rune]
 
 method render*(node: TempConverter, ctx: var nw.Context[State]) =
   procCall render(nw.Component(node), ctx)
-  ctx = nw.slice(ctx, 0, 0, 15, 3)
+  ctx = nw.slice(ctx, 0, 0, 10, 3)
   let focused = addFocusArea(ctx)
   render(nw.Box(
     direction: nw.Direction.Horizontal,
@@ -131,6 +180,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
     child: nw.Box(
       direction: nw.Direction.Vertical,
       children: nw.all(
+        Counter(id: "counter", key: key, mouse: mouse),
         TempConverter(key: key, chars: chars),
         Lyrics(),
       )
