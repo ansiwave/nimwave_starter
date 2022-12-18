@@ -45,13 +45,13 @@ proc addFocusArea(ctx: var nw.Context[State]): bool =
 
 type
   Button = ref object of nw.Node
-    text: string
+    str: string
     key: iw.Key
     mouse: iw.MouseInfo
     action: proc ()
 
 method render*(node: Button, ctx: var nw.Context[State]) =
-  ctx = nimwave.slice(ctx, 0, 0, node.text.runeLen+2, iw.height(ctx.tb))
+  ctx = nimwave.slice(ctx, 0, 0, node.str.runeLen+2, iw.height(ctx.tb))
   let focused = addFocusArea(ctx)
   if (node.mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, node.mouse)) or
       (focused and node.key == iw.Key.Enter):
@@ -59,7 +59,7 @@ method render*(node: Button, ctx: var nw.Context[State]) =
   render(nw.Box(
     direction: nw.Direction.Horizontal,
     border: if focused: nw.Border.Double else: nw.Border.Single,
-    children: nw.seq(node.text),
+    children: nw.seq(node.str),
   ), ctx)
 
 type
@@ -82,7 +82,7 @@ method render*(node: Counter, ctx: var nw.Context[State]) =
         border: nw.Border.Hidden,
         children: nw.seq($mnode.count),
       ),
-      Button(text: "Count", key: node.key, mouse: node.mouse, action: incCount),
+      Button(str: "Count", key: node.key, mouse: node.mouse, action: incCount),
     ),
   ), ctx)
 
@@ -91,23 +91,23 @@ type
     key: iw.Key
     chars: seq[Rune]
     action: proc (text: nw.Text)
-    innerText: nw.Text
+    text: nw.Text
     initialText: string
 
 method render*(node: TextField, ctx: var nw.Context[State]) =
   ctx = nw.slice(ctx, 0, 0, 10, 3)
   let focused = addFocusArea(ctx)
-  node.innerText = getMounted(nw.Text(id: node.id & "/text", kind: nw.TextKind.Edit, text: node.initialText), ctx)
-  node.innerText.enabled = focused
-  node.innerText.key = node.key
-  node.innerText.chars = node.chars
+  node.text = getMounted(nw.Text(id: node.id & "/text", kind: nw.TextKind.Edit, str: node.initialText), ctx)
+  node.text.enabled = focused
+  node.text.key = node.key
+  node.text.chars = node.chars
   render(nw.Box(
     direction: nw.Direction.Horizontal,
     border: if focused: nw.Border.Double else: nw.Border.Single,
-    children: nw.seq(node.innerText),
+    children: nw.seq(node.text),
   ), ctx)
   if focused and (node.key != iw.Key.None or node.chars.len > 0):
-    node.action(node.innerText)
+    node.action(node.text)
 
 type
   TempConverter = ref object of nw.Node
@@ -124,19 +124,19 @@ method render*(node: TempConverter, ctx: var nw.Context[State]) =
   celsius.action =
     proc (text: nw.Text) =
       try:
-        let c = strutils.parseFloat(text.text)
-        fahren.innerText.text = $(c * (9 / 5) + 32f)
+        let c = strutils.parseFloat(text.str)
+        fahren.text.str = $(c * (9 / 5) + 32f)
       except ValueError:
-        fahren.innerText.text = ""
+        fahren.text.str = ""
   fahren.key = node.key
   fahren.chars = node.chars
   fahren.action =
     proc (text: nw.Text) =
       try:
-        let f = strutils.parseFloat(text.text)
-        celsius.innerText.text = $((f - 32) * (5 / 9))
+        let f = strutils.parseFloat(text.str)
+        celsius.text.str = $((f - 32) * (5 / 9))
       except ValueError:
-        celsius.innerText.text = ""
+        celsius.text.str = ""
   render(nw.Box(
     direction: nw.Direction.Horizontal,
     children: nw.seq(
@@ -145,7 +145,7 @@ method render*(node: TempConverter, ctx: var nw.Context[State]) =
         direction: nw.Direction.Horizontal,
         border: nw.Border.Hidden,
         children: nw.seq(
-          nw.Text(text: "Celsius = "),
+          nw.Text(str: "Celsius = "),
         ),
       ),
       fahren,
@@ -153,7 +153,7 @@ method render*(node: TempConverter, ctx: var nw.Context[State]) =
         direction: nw.Direction.Horizontal,
         border: nw.Border.Hidden,
         children: nw.seq(
-          nw.Text(text: "Fahrenheit"),
+          nw.Text(str: "Fahrenheit"),
         ),
       ),
     ),
