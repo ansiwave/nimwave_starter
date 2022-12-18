@@ -1,5 +1,3 @@
---gc:orc
-
 when defined(emscripten):
   --nimcache:tmp
 
@@ -18,7 +16,7 @@ when defined(emscripten):
     --clang.cpp.linkerexe:emcc
   --listCmd
 
-  --gc:orc
+  --mm:orc
   --exceptions:goto
   --define:noSignalHandler
 
@@ -27,3 +25,5 @@ when defined(emscripten):
   --threads:off
 
   switch("passL", "-o web/index.html --shell-file src/web/index.html -s EXPORTED_FUNCTIONS=\"['_main', '_onMouseDown', '_onMouseMove', '_onMouseUp']\" -s EXPORTED_RUNTIME_METHODS=\"['ccall']\"")
+else:
+  --mm:orc
