@@ -59,9 +59,7 @@ method render*(node: Button, ctx: var nw.Context[State]) =
   render(nw.Box(
     direction: nw.Direction.Horizontal,
     border: if focused: nw.Border.Double else: nw.Border.Single,
-    children: nw.seq(
-      nw.Text(text: node.text),
-    ),
+    children: nw.seq(node.text),
   ), ctx)
 
 type
@@ -82,9 +80,7 @@ method render*(node: Counter, ctx: var nw.Context[State]) =
       nw.Box(
         direction: nw.Direction.Horizontal,
         border: nw.Border.Hidden,
-        children: nw.seq(
-          nw.Text(text: $mnode.count),
-        ),
+        children: nw.seq($mnode.count),
       ),
       Button(text: "Count", key: node.key, mouse: node.mouse, action: incCount),
     ),
@@ -168,15 +164,13 @@ type
 
 method render*(node: Lyrics, ctx: var nw.Context[State]) =
   const rollingStone = strutils.splitLines(staticRead("rollingstone.txt"))
-  let focused = addFocusArea(ctx)
-  var lines: seq[nw.Node]
-  for line in rollingStone:
-    lines.add(nw.Text(text: line))
-  let box = nw.Box(
-    direction: nw.Direction.Vertical,
-    border: if focused: nw.Border.Double else: nw.Border.Single,
-    children: lines,
-  )
+  let
+    focused = addFocusArea(ctx)
+    box = nw.Box(
+      direction: nw.Direction.Vertical,
+      border: if focused: nw.Border.Double else: nw.Border.Single,
+      children: nw.seq(rollingStone),
+    )
   render(box, ctx)
 
 var ctx = nw.initContext[State]()
