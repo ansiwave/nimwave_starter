@@ -59,7 +59,7 @@ method render*(node: Button, ctx: var nw.Context[State]) =
   render(nw.Box(
     direction: nw.Direction.Horizontal,
     border: if focused: nw.Border.Double else: nw.Border.Single,
-    children: nw.all(
+    children: nw.seq(
       nw.Text(text: node.text),
     ),
   ), ctx)
@@ -78,11 +78,11 @@ method render*(node: Counter, ctx: var nw.Context[State]) =
   render(nw.Box(
     direction: nw.Direction.Horizontal,
     border: nw.Border.None,
-    children: nw.all(
+    children: nw.seq(
       nw.Box(
         direction: nw.Direction.Horizontal,
         border: nw.Border.Hidden,
-        children: nw.all(
+        children: nw.seq(
           nw.Text(text: $mnode.count),
         ),
       ),
@@ -108,7 +108,7 @@ method render*(node: TextField, ctx: var nw.Context[State]) =
   render(nw.Box(
     direction: nw.Direction.Horizontal,
     border: if focused: nw.Border.Double else: nw.Border.Single,
-    children: nw.all(node.innerText),
+    children: nw.seq(node.innerText),
   ), ctx)
   if focused and (node.key != iw.Key.None or node.chars.len > 0):
     node.action(node.innerText)
@@ -143,12 +143,12 @@ method render*(node: TempConverter, ctx: var nw.Context[State]) =
         celsius.innerText.text = ""
   render(nw.Box(
     direction: nw.Direction.Horizontal,
-    children: nw.all(
+    children: nw.seq(
       celsius,
       nw.Box(
         direction: nw.Direction.Horizontal,
         border: nw.Border.Hidden,
-        children: nw.all(
+        children: nw.seq(
           nw.Text(text: "Celsius = "),
         ),
       ),
@@ -156,7 +156,7 @@ method render*(node: TempConverter, ctx: var nw.Context[State]) =
       nw.Box(
         direction: nw.Direction.Horizontal,
         border: nw.Border.Hidden,
-        children: nw.all(
+        children: nw.seq(
           nw.Text(text: "Fahrenheit"),
         ),
       ),
@@ -232,7 +232,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
     growY: platform == Web,
     child: nw.Box(
       direction: nw.Direction.Vertical,
-      children: nw.all(
+      children: nw.seq(
         Counter(id: "counter", key: key, mouse: mouse),
         TempConverter(id: "converter", key: key, chars: chars),
         Lyrics(),
