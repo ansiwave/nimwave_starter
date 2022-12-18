@@ -73,18 +73,21 @@ method render*(node: Counter, ctx: var nw.Context[State]) =
   ctx = nw.slice(ctx, 0, 0, 15, 3)
   proc incCount() =
     mnode.count += 1
-  render(nw.Box(
-    direction: nw.Direction.Horizontal,
-    border: nw.Border.None,
-    children: nw.seq(
-      nw.Box(
-        direction: nw.Direction.Horizontal,
-        border: nw.Border.Hidden,
-        children: nw.seq($mnode.count),
+  render(
+    nw.Box(
+      direction: nw.Direction.Horizontal,
+      border: nw.Border.None,
+      children: nw.seq(
+        nw.Box(
+          direction: nw.Direction.Horizontal,
+          border: nw.Border.Hidden,
+          children: nw.seq($mnode.count),
+        ),
+        Button(str: "Count", key: node.key, mouse: node.mouse, action: incCount),
       ),
-      Button(str: "Count", key: node.key, mouse: node.mouse, action: incCount),
     ),
-  ), ctx)
+    ctx
+  )
 
 type
   TextField = ref object of nw.Node
@@ -101,11 +104,14 @@ method render*(node: TextField, ctx: var nw.Context[State]) =
   node.text.enabled = focused
   node.text.key = node.key
   node.text.chars = node.chars
-  render(nw.Box(
-    direction: nw.Direction.Horizontal,
-    border: if focused: nw.Border.Double else: nw.Border.Single,
-    children: nw.seq(node.text),
-  ), ctx)
+  render(
+    nw.Box(
+      direction: nw.Direction.Horizontal,
+      border: if focused: nw.Border.Double else: nw.Border.Single,
+      children: nw.seq(node.text),
+    ),
+    ctx
+  )
   if focused and (node.key != iw.Key.None or node.chars.len > 0):
     node.action(node.text)
 
@@ -137,27 +143,30 @@ method render*(node: TempConverter, ctx: var nw.Context[State]) =
         celsius.text.str = $((f - 32) * (5 / 9))
       except ValueError:
         celsius.text.str = ""
-  render(nw.Box(
-    direction: nw.Direction.Horizontal,
-    children: nw.seq(
-      celsius,
-      nw.Box(
-        direction: nw.Direction.Horizontal,
-        border: nw.Border.Hidden,
-        children: nw.seq(
-          nw.Text(str: "Celsius = "),
+  render(
+    nw.Box(
+      direction: nw.Direction.Horizontal,
+      children: nw.seq(
+        celsius,
+        nw.Box(
+          direction: nw.Direction.Horizontal,
+          border: nw.Border.Hidden,
+          children: nw.seq(
+            nw.Text(str: "Celsius = "),
+          ),
         ),
-      ),
-      fahren,
-      nw.Box(
-        direction: nw.Direction.Horizontal,
-        border: nw.Border.Hidden,
-        children: nw.seq(
-          nw.Text(str: "Fahrenheit"),
+        fahren,
+        nw.Box(
+          direction: nw.Direction.Horizontal,
+          border: nw.Border.Hidden,
+          children: nw.seq(
+            nw.Text(str: "Fahrenheit"),
+          ),
         ),
       ),
     ),
-  ), ctx)
+    ctx
+  )
 
 type
   Lyrics = ref object of nw.Node
@@ -218,44 +227,47 @@ proc tick*(tb: var iw.TerminalBuffer) =
   const scrollSpeed = 2
 
   ctx.tb = tb
-  let root = nw.Scroll(
-    id: "main-page",
-    # on the web, we want to use native scrolling,
-    # so make this component grow to fit its content
-    growX: platform == Web,
-    growY: platform == Web,
-    child: nw.Box(
-      direction: nw.Direction.Vertical,
-      children: nw.seq(
-        Counter(id: "counter", key: key, mouse: mouse),
-        TempConverter(id: "converter", key: key, chars: chars),
-        Lyrics(),
-      )
+
+  renderRoot(
+    nw.Scroll(
+      id: "main-page",
+      # on the web, we want to use native scrolling,
+      # so make this component grow to fit its content
+      growX: platform == Web,
+      growY: platform == Web,
+      child: nw.Box(
+        direction: nw.Direction.Vertical,
+        children: nw.seq(
+          Counter(id: "counter", key: key, mouse: mouse),
+          TempConverter(id: "converter", key: key, chars: chars),
+          Lyrics(),
+        )
+      ),
+      changeScrollX:
+        # don't scroll x if text fields are focused
+        if ctx.data.focusIndex notin {1, 2}:
+          case key:
+          of iw.Key.Left:
+            scrollSpeed
+          of iw.Key.Right:
+            -scrollSpeed
+          else:
+            0
+        else:
+          0
+      ,
+      changeScrollY:
+        if focusChange == 0:
+          case key:
+          of iw.Key.Up:
+            scrollSpeed
+          of iw.Key.Down:
+            -scrollSpeed
+          else:
+            0
+        else:
+          0
     ),
-    changeScrollX:
-      # don't scroll x if text fields are focused
-      if ctx.data.focusIndex notin {1, 2}:
-        case key:
-        of iw.Key.Left:
-          scrollSpeed
-        of iw.Key.Right:
-          -scrollSpeed
-        else:
-          0
-      else:
-        0
-    ,
-    changeScrollY:
-      if focusChange == 0:
-        case key:
-        of iw.Key.Up:
-          scrollSpeed
-        of iw.Key.Down:
-          -scrollSpeed
-        else:
-          0
-      else:
-        0
+    ctx
   )
-  renderRoot(root, ctx)
 
