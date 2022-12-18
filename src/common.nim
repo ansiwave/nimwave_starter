@@ -1,6 +1,6 @@
 from illwave as iw import `[]`, `[]=`, `==`
 from nimwave as nw import nil
-import unicode, json, tables, deques
+import unicode, tables, deques
 from strutils import nil
 from sequtils import nil
 
