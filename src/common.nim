@@ -231,10 +231,7 @@ proc tick*(tb: var iw.TerminalBuffer) =
   renderRoot(
     nw.Scroll(
       id: "main-page",
-      # make this node grow to fit its content,
-      # but don't grow horizonally in the terminal,
-      # because terminals will run the chars onto a new line and break it visually
-      growX: platform != Tui,
+      growX: true,
       growY: true,
       child: nw.Box(
         direction: nw.Direction.Vertical,
