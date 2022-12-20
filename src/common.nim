@@ -51,7 +51,7 @@ type
     action: proc ()
 
 method render*(node: Button, ctx: var nw.Context[State]) =
-  ctx = nimwave.slice(ctx, 0, 0, node.str.runeLen+2, iw.height(ctx.tb))
+  ctx = nw.slice(ctx, 0, 0, node.str.runeLen+2, iw.height(ctx.tb))
   let focused = addFocusArea(ctx)
   if (node.mouse.action == iw.MouseButtonAction.mbaPressed and iw.contains(ctx.tb, node.mouse)) or
       (focused and node.key == iw.Key.Enter):
@@ -121,7 +121,7 @@ type
     chars: seq[Rune]
 
 method render*(node: TempConverter, ctx: var nw.Context[State]) =
-  ctx = nimwave.slice(ctx, 0, 0, iw.width(ctx.tb), 3)
+  ctx = nw.slice(ctx, 0, 0, iw.width(ctx.tb), 3)
   let
     celsius = getMounted(TextField(id: node.id & "/celsius", initialText: "5.0"), ctx)
     fahren = getMounted(TextField(id: node.id & "/fahrenheit", initialText: "41.0"), ctx)
