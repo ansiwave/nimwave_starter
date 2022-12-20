@@ -231,10 +231,11 @@ proc tick*(tb: var iw.TerminalBuffer) =
   renderRoot(
     nw.Scroll(
       id: "main-page",
-      # on the web, we want to use native scrolling,
-      # so make this component grow to fit its content
-      growX: platform == Web,
-      growY: platform == Web,
+      # make this node grow to fit its content,
+      # but don't grow horizonally in the terminal,
+      # because terminals will run the chars onto a new line and break it visually
+      growX: platform != Tui,
+      growY: true,
       child: nw.Box(
         direction: nw.Direction.Vertical,
         children: nw.seq(
