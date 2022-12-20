@@ -108,19 +108,15 @@ proc tick*(game: Game) =
     fontWidth = fontWidth()
     fontHeight = fontHeight()
 
-  var
+  let
     termWidth = int(game.windowWidth.float / fontWidth)
     termHeight = int(game.windowHeight.float / fontHeight)
+    vWidth = termWidth.float * fontWidth
+    vHeight = termHeight.float * fontHeight
 
   var tb = iw.initTerminalBuffer(termWidth, termHeight)
 
   common.tick(tb)
-
-  termWidth = iw.width(tb)
-  termHeight = iw.height(tb)
-
-  let vWidth = termWidth.float * fontWidth
-  let vHeight = termHeight.float * fontHeight
 
   var e = gl.copy(textEntity)
   gui.updateUniforms(e, 0, 0, false)
