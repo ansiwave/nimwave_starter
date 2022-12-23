@@ -16,7 +16,7 @@ nimble build gui -d:release --app:gui
 
 
 # build release version for the web
-nimble build web -d:release -d:emscripten
+nimble emscripten
 ```
 
 NOTE: To build for the web, you must install Emscripten:
