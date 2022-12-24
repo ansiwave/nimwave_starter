@@ -1,10 +1,10 @@
+when not defined(emscripten):
+  {.error: "You must set -d:emscripten to build for the web".}
+
 from nimwave/web import nil
 from nimwave/web/emscripten import nil
 from web/core import nil
 import tables, unicode
-
-when not defined(emscripten):
-  {.error: "You must set -d:emscripten to build for the web".}
 
 proc onKeyDown(eventType: cint, keyEvent: ptr emscripten.EmscriptenKeyboardEvent, userData: pointer) {.cdecl.} =
   let
