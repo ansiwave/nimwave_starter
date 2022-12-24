@@ -99,6 +99,8 @@ proc init*(game: var Game) =
 
   common.init()
 
+var ctx = common.initContext()
+
 proc tick*(game: Game) =
   glClearColor(bgColor.arr[0], bgColor.arr[1], bgColor.arr[2], bgColor.arr[3])
   glClear(GL_COLOR_BUFFER_BIT)
@@ -107,23 +109,21 @@ proc tick*(game: Game) =
   let
     fontWidth = fontWidth()
     fontHeight = fontHeight()
-
-  let
     termWidth = int(game.windowWidth.float / fontWidth)
     termHeight = int(game.windowHeight.float / fontHeight)
     vWidth = termWidth.float * fontWidth
     vHeight = termHeight.float * fontHeight
 
-  var tb = iw.initTerminalBuffer(termWidth, termHeight)
+  ctx.tb = iw.initTerminalBuffer(termWidth, termHeight)
 
-  common.tick(tb)
+  common.tick(ctx)
 
   var e = gl.copy(textEntity)
   gui.updateUniforms(e, 0, 0, false)
   for y in 0 ..< termHeight:
     var line: seq[iw.TerminalChar]
     for x in 0 ..< termWidth:
-      line.add(tb[x, y])
+      line.add(ctx.tb[x, y])
     discard gui.addLine(e, baseEntity, monoFont, gui.codepointToGlyph, textColor, line)
   e.project(vWidth, vHeight)
   e.translate(0f, 0f)

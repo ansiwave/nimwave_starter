@@ -7,7 +7,7 @@ from sequtils import nil
 type
   Platform* = enum
     Tui, Gui, Web,
-  State = object
+  State* = object
     focusIndex*: int
     focusAreas*: ref seq[iw.TerminalBuffer]
 
@@ -182,10 +182,11 @@ method render*(node: Lyrics, ctx: var nw.Context[State]) =
     )
   render(box, ctx)
 
-var ctx = nw.initContext[State]()
-new ctx.data.focusAreas
+proc initContext*(): nw.Context[State] =
+  result = nw.initContext[State]()
+  new result.data.focusAreas
 
-proc tick*(tb: var iw.TerminalBuffer) =
+proc tick*(ctx: var nw.Context[State]) =
   let
     mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
     chars = block:
@@ -219,14 +220,12 @@ proc tick*(tb: var iw.TerminalBuffer) =
     # if the next focus area is out of view, don't change the focus
     else:
       let focusArea = ctx.data.focusAreas[ctx.data.focusIndex + focusChange]
-      if iw.y(focusArea) < 0 or iw.y(focusArea) > iw.height(tb):
+      if iw.y(focusArea) < 0 or iw.y(focusArea) > iw.height(ctx.tb):
         focusChange = 0
   ctx.data.focusIndex += focusChange
   ctx.data.focusAreas[] = @[]
 
   const scrollSpeed = 2
-
-  ctx.tb = tb
 
   renderRoot(
     nw.Scroll(

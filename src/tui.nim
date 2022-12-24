@@ -1,12 +1,11 @@
 from illwave as iw import nil
+from nimwave as nw import nil
 from terminal import nil
 from os import nil
 from common import nil
 import unicode
 
 common.platform = common.Tui
-
-var prevTb: iw.TerminalBuffer
 
 proc deinit() =
   iw.deinit()
@@ -22,11 +21,8 @@ proc init() =
   )
   terminal.hideCursor()
   common.init()
-  prevTb = iw.initTerminalBuffer(terminal.terminalWidth(), terminal.terminalHeight())
 
-var mouseInfo: iw.MouseInfo
-
-proc tick() =
+proc tick(ctx: var nw.Context[common.State], prevTb: var iw.TerminalBuffer, mouseInfo: var iw.MouseInfo) =
   let key = iw.getKey(mouseInfo)
   if key == iw.Key.Mouse:
     common.onMouse(mouseInfo)
@@ -34,16 +30,20 @@ proc tick() =
     common.onChar(cast[Rune](key.ord))
   elif key != iw.Key.None:
     common.onKey(key)
-  var tb = iw.initTerminalBuffer(terminal.terminalWidth(), terminal.terminalHeight())
-  common.tick(tb)
-  iw.display(tb, prevTb)
-  prevTb = tb
+  ctx.tb = iw.initTerminalBuffer(terminal.terminalWidth(), terminal.terminalHeight())
+  common.tick(ctx)
+  iw.display(ctx.tb, prevTb)
 
 proc main() =
+  var
+    ctx = common.initContext()
+    prevTb: iw.TerminalBuffer
+    mouseInfo: iw.MouseInfo
   init()
   while true:
     try:
-      tick()
+      tick(ctx, prevTb, mouseInfo)
+      prevTb = ctx.tb
     except Exception as ex:
       deinit()
       raise ex

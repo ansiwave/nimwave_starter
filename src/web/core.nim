@@ -66,14 +66,17 @@ const
 proc init*() =
   common.init()
 
+var ctx = common.initContext()
 var prevTb: iw.TerminalBuffer
 
 proc tick*() =
-  var
+  let
     termWidth = int(emscripten.getClientWidth().float / fontWidth)
     termHeight = int(emscripten.getClientHeight() / fontHeight)
-    tb = iw.initTerminalBuffer(termWidth, termHeight)
 
-  common.tick(tb)
-  web.display(tb, prevTb, "#content", options)
-  prevTb = tb
+  ctx.tb = iw.initTerminalBuffer(termWidth, termHeight)
+
+  common.tick(ctx)
+
+  web.display(ctx.tb, prevTb, "#content", options)
+  prevTb = ctx.tb
