@@ -170,14 +170,24 @@ type
 
 method render*(node: Lyrics, ctx: var nw.Context[State]) =
   const rollingStone = strutils.splitLines(staticRead("rollingstone.txt"))
-  let
-    focused = addFocusArea(ctx)
-    box = nw.Box(
+  # render lyrics without border initially
+  render(
+    nw.Box(
+      direction: nw.Direction.Vertical,
+      border: nw.Border.Hidden,
+      children: nw.seq(rollingStone),
+    ),
+    ctx
+  )
+  # now that the size is known, add the focus area and render the border
+  let focused = addFocusArea(ctx)
+  render(
+    nw.Box(
       direction: nw.Direction.Vertical,
       border: if focused: nw.Border.Double else: nw.Border.Single,
-      children: nw.seq(rollingStone),
-    )
-  render(box, ctx)
+    ),
+    ctx
+  )
 
 proc init*(ctx: var nw.Context[State]) =
   ctx = nw.initContext[State]()
