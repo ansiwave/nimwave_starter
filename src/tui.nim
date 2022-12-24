@@ -11,7 +11,7 @@ proc deinit() =
   iw.deinit()
   terminal.showCursor()
 
-proc init() =
+proc init(ctx: var nw.Context[common.State]) =
   terminal.enableTrueColors()
   iw.init()
   setControlCHook(
@@ -20,7 +20,7 @@ proc init() =
       quit(0)
   )
   terminal.hideCursor()
-  common.init()
+  common.init(ctx)
 
 proc tick(ctx: var nw.Context[common.State], prevTb: var iw.TerminalBuffer, mouseInfo: var iw.MouseInfo) =
   let key = iw.getKey(mouseInfo)
@@ -36,10 +36,10 @@ proc tick(ctx: var nw.Context[common.State], prevTb: var iw.TerminalBuffer, mous
 
 proc main() =
   var
-    ctx = common.initContext()
+    ctx: nw.Context[common.State]
     prevTb: iw.TerminalBuffer
     mouseInfo: iw.MouseInfo
-  init()
+  init(ctx)
   while true:
     try:
       tick(ctx, prevTb, mouseInfo)

@@ -7,6 +7,7 @@ from nimwave/gui import nil
 import tables
 from ../common import nil
 from illwave as iw import `[]`, `[]=`
+from nimwave as nw import nil
 import unicode
 
 common.platform = common.Gui
@@ -86,6 +87,8 @@ proc onScroll*(xoffset: float, yoffset: float) =
     info.scrollDir = iw.ScrollDirection.sdUp
   common.onMouse(info)
 
+var ctx: nw.Context[common.State]
+
 proc init*(game: var Game) =
   doAssert glInit()
 
@@ -97,9 +100,7 @@ proc init*(game: var Game) =
   baseEntity = text.initTextEntity(monoFont)
   textEntity = compile(game, gui.initInstancedEntity(baseEntity, monoFont))
 
-  common.init()
-
-var ctx = common.initContext()
+  common.init(ctx)
 
 proc tick*(game: Game) =
   glClearColor(bgColor.arr[0], bgColor.arr[1], bgColor.arr[2], bgColor.arr[3])

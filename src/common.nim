@@ -36,9 +36,6 @@ proc onChar*(r: Rune) =
 proc onKey*(k: iw.Key) =
   keyQueue.addLast(k)
 
-proc init*() =
-  discard
-
 proc addFocusArea(ctx: var nw.Context[State]): bool =
   result = ctx.data.focusIndex == ctx.data.focusAreas[].len
   ctx.data.focusAreas[].add(ctx.tb)
@@ -182,9 +179,9 @@ method render*(node: Lyrics, ctx: var nw.Context[State]) =
     )
   render(box, ctx)
 
-proc initContext*(): nw.Context[State] =
-  result = nw.initContext[State]()
-  new result.data.focusAreas
+proc init*(ctx: var nw.Context[State]) =
+  ctx = nw.initContext[State]()
+  new ctx.data.focusAreas
 
 proc tick*(ctx: var nw.Context[State]) =
   let

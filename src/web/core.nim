@@ -1,4 +1,5 @@
 from illwave as iw import `[]`, `[]=`, `==`
+from nimwave as nw import nil
 from ../common import nil
 import unicode
 from nimwave/web import nil
@@ -63,11 +64,11 @@ const
     mouseMoveFn: "mouseMove",
   )
 
-proc init*() =
-  common.init()
-
-var ctx = common.initContext()
+var ctx: nw.Context[common.State]
 var prevTb: iw.TerminalBuffer
+
+proc init*() =
+  common.init(ctx)
 
 proc tick*() =
   let

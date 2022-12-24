@@ -1,4 +1,5 @@
 from illwave as iw import `[]`, `[]=`, `==`
+from nimwave as nw import nil
 from nimwave/web import nil
 from common import nil
 from os import `/`
@@ -9,8 +10,8 @@ common.platform = common.Web
 proc main*() =
   const path = "web" / "index.html"
   assert os.fileExists(path)
-  common.init()
-  var ctx = common.initContext()
+  var ctx: nw.Context[common.State]
+  common.init(ctx)
   ctx.tb = iw.initTerminalBuffer(80, 20)
   common.tick(ctx)
   let
