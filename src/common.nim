@@ -194,84 +194,88 @@ proc init*(ctx: var nw.Context[State]) =
   new ctx.data.focusAreas
 
 proc tick*(ctx: var nw.Context[State]) =
-  let
-    mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
-    chars = block:
-      let s = sequtils.toSeq(charQueue)
-      charQueue.clear
-      s
-    key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
+  while true:
+    let
+      mouse = if mouseQueue.len > 0: mouseQueue.popFirst else: iw.MouseInfo()
+      chars = block:
+        let s = sequtils.toSeq(charQueue)
+        charQueue.clear
+        s
+      key = if keyQueue.len > 0: keyQueue.popFirst else: iw.Key.None
 
-  # change focus via mouse click
-  if mouse.button == iw.MouseButton.mbLeft and mouse.action == iw.MouseButtonAction.mbaPressed:
-    # check the last focus areas first so child components are checked before their parents
-    for i in countDown(ctx.data.focusAreas[].len-1, 0):
-      let area = ctx.data.focusAreas[i]
-      if iw.contains(area, mouse):
-        ctx.data.focusIndex = i
-        break
+    # change focus via mouse click
+    if mouse.button == iw.MouseButton.mbLeft and mouse.action == iw.MouseButtonAction.mbaPressed:
+      # check the last focus areas first so child components are checked before their parents
+      for i in countDown(ctx.data.focusAreas[].len-1, 0):
+        let area = ctx.data.focusAreas[i]
+        if iw.contains(area, mouse):
+          ctx.data.focusIndex = i
+          break
 
-  var focusChange =
-    case key:
-    of iw.Key.Up:
-      -1
-    of iw.Key.Down:
-      1
-    else:
-      0
-  if focusChange != 0 and ctx.data.focusAreas[].len > 0:
-    # if the next focus area doesn't exist, don't change the focus
-    if ctx.data.focusIndex + focusChange < 0 or
-      ctx.data.focusIndex + focusChange >= ctx.data.focusAreas[].len:
-      focusChange = 0
-    # if the next focus area is out of view, don't change the focus
-    else:
-      let focusArea = ctx.data.focusAreas[ctx.data.focusIndex + focusChange]
-      if iw.y(focusArea) < 0 or iw.y(focusArea) > iw.height(ctx.tb):
+    var focusChange =
+      case key:
+      of iw.Key.Up:
+        -1
+      of iw.Key.Down:
+        1
+      else:
+        0
+    if focusChange != 0 and ctx.data.focusAreas[].len > 0:
+      # if the next focus area doesn't exist, don't change the focus
+      if ctx.data.focusIndex + focusChange < 0 or
+        ctx.data.focusIndex + focusChange >= ctx.data.focusAreas[].len:
         focusChange = 0
-  ctx.data.focusIndex += focusChange
-  ctx.data.focusAreas[] = @[]
+      # if the next focus area is out of view, don't change the focus
+      else:
+        let focusArea = ctx.data.focusAreas[ctx.data.focusIndex + focusChange]
+        if iw.y(focusArea) < 0 or iw.y(focusArea) > iw.height(ctx.tb):
+          focusChange = 0
+    ctx.data.focusIndex += focusChange
+    ctx.data.focusAreas[] = @[]
 
-  const scrollSpeed = 2
+    const scrollSpeed = 2
 
-  renderRoot(
-    nw.Scroll(
-      id: "main-page",
-      growX: true,
-      growY: true,
-      child: nw.Box(
-        direction: nw.Direction.Vertical,
-        children: nw.seq(
-          Counter(id: "counter", key: key, mouse: mouse),
-          TempConverter(id: "converter", key: key, chars: chars),
-          Lyrics(),
-        )
+    renderRoot(
+      nw.Scroll(
+        id: "main-page",
+        growX: true,
+        growY: true,
+        child: nw.Box(
+          direction: nw.Direction.Vertical,
+          children: nw.seq(
+            Counter(id: "counter", key: key, mouse: mouse),
+            TempConverter(id: "converter", key: key, chars: chars),
+            Lyrics(),
+          )
+        ),
+        changeScrollX:
+          # don't scroll x if text fields are focused
+          if ctx.data.focusIndex notin {1, 2}:
+            case key:
+            of iw.Key.Left:
+              scrollSpeed
+            of iw.Key.Right:
+              -scrollSpeed
+            else:
+              0
+          else:
+            0
+        ,
+        changeScrollY:
+          if focusChange == 0:
+            case key:
+            of iw.Key.Up:
+              scrollSpeed
+            of iw.Key.Down:
+              -scrollSpeed
+            else:
+              0
+          else:
+            0
       ),
-      changeScrollX:
-        # don't scroll x if text fields are focused
-        if ctx.data.focusIndex notin {1, 2}:
-          case key:
-          of iw.Key.Left:
-            scrollSpeed
-          of iw.Key.Right:
-            -scrollSpeed
-          else:
-            0
-        else:
-          0
-      ,
-      changeScrollY:
-        if focusChange == 0:
-          case key:
-          of iw.Key.Up:
-            scrollSpeed
-          of iw.Key.Down:
-            -scrollSpeed
-          else:
-            0
-        else:
-          0
-    ),
-    ctx
-  )
+      ctx
+    )
+
+    if mouseQueue.len == 0 and charQueue.len == 0 and keyQueue.len == 0:
+      break
 
