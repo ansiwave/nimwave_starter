@@ -279,3 +279,6 @@ proc tick*(ctx: var nw.Context[State]) =
     if mouseQueue.len == 0 and charQueue.len == 0 and keyQueue.len == 0:
       break
 
+    # clear terminal because we are rendering again
+    iw.clear(ctx.tb)
+
