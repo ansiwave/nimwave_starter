@@ -1,5 +1,5 @@
 when not defined(emscripten):
-  {.error: "You must set -d:emscripten to build for the web".}
+  {.error: "You should run `nimble emscripten` to build for the web.".}
 
 from nimwave/web import nil
 from nimwave/web/emscripten import nil
